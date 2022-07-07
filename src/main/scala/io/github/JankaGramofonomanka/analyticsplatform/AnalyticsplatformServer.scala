@@ -23,7 +23,8 @@ object AnalyticsplatformServer {
       // in the underlying routes.
       httpApp = (
         AnalyticsplatformRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-        AnalyticsplatformRoutes.jokeRoutes[F](jokeAlg)
+        AnalyticsplatformRoutes.jokeRoutes[F](jokeAlg) <+>
+        AnalyticsplatformRoutes.debugModeRoutes
       ).orNotFound
 
       // With Middlewares in place
