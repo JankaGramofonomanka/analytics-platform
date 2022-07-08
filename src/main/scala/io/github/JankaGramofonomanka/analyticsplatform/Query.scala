@@ -5,7 +5,7 @@ import org.http4s.dsl.io._
 import cats.data.Validated
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import java.time.{LocalDate, Duration}
+import java.time.{LocalDateTime, Duration}
 
 object Query {
   
@@ -37,8 +37,8 @@ object Query {
 
   private def parseTimeRange(s: String): TimeRange = {
     val items = s.split("_")
-    val from = LocalDate.parse(items(0))
-    val to = LocalDate.parse(items(1))
+    val from = LocalDateTime.parse(items(0))
+    val to = LocalDateTime.parse(items(1))
     Duration.between(from, to)
   }
 
