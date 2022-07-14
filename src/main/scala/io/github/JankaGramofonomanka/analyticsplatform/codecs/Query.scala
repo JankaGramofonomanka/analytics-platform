@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.codecs
 
 import org.http4s._
 import org.http4s.dsl.io._
