@@ -5,7 +5,7 @@ import org.http4s.dsl.io._
 import cats.data.Validated
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import java.time.{LocalDateTime, Duration}
+import java.time.LocalDateTime
 
 object Query {
   
@@ -39,7 +39,7 @@ object Query {
     val items = s.split("_")
     val from = LocalDateTime.parse(items(0))
     val to = LocalDateTime.parse(items(1))
-    Duration.between(from, to)
+    TimeRange(from, to)
   }
 
   object TimeRangeMatcher extends QueryParamDecoderMatcher[TimeRange](name = "time_range")
