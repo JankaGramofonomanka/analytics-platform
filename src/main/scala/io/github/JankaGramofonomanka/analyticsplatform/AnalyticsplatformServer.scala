@@ -9,13 +9,19 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
+import io.github.JankaGramofonomanka.analyticsplatform.KVFrontend
+import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec
+
+
 object AnalyticsplatformServer {
 
-  def stream[F[_]: Async]: Stream[F, Nothing] = {
+  def stream[F[_]: Async](db: KeyValueDB[F], topic: TagTopic[F], codec: JsonCodec[F]): Stream[F, Nothing] = {
     for {
       client <- Stream.resource(EmberClientBuilder.default[F].build)
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
+
+      ops = new KVFrontend[F](db, topic)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -24,7 +30,7 @@ object AnalyticsplatformServer {
       httpApp = (
         AnalyticsplatformRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
         AnalyticsplatformRoutes.jokeRoutes[F](jokeAlg) <+>
-        AnalyticsplatformRoutes.mockRoutes
+        AnalyticsplatformRoutes.kvRoutes(ops, codec)
       ).orNotFound
 
       // With Middlewares in place

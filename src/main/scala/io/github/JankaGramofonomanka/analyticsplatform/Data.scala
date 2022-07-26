@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform
 
 import java.time.LocalDateTime
+import java.util.Date
 
 object Data {
   final case class Cookie(value: String) extends AnyVal
@@ -23,7 +24,9 @@ object Data {
   final case class CategoryId(value: String)  extends AnyVal
 
   final case class Country(value: String)   extends AnyVal
-  final case class Price(value: Int)        extends AnyVal
+  final case class Price(value: Int)        extends AnyVal {
+    def +(other: Price) = Price(value + other.value)
+  }
   final case class ProductId(value: String) extends AnyVal
 
   
@@ -59,6 +62,20 @@ object Data {
 
   final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag])
 
-  // TODO complete definition
-  final case class Aggregates()
+  type Bucket = Date
+  final case class Aggregates(fields: AggregateFields, values: List[(Bucket, AggregateValue)])
+  final case class AggregateFields(
+    timeRange: TimeRange,
+    action: Action,
+    count: Boolean,
+    sumPrice: Boolean,
+    origin: Option[Origin],
+    brandId: Option[BrandId],
+    categoryId: Option[CategoryId],
+  )
+
+  final case class AggregateValue(count: Int, sumPrice: Price)
+  object AggregateValue {
+    val empty: AggregateValue = AggregateValue(0, Price(0))
+  }
 }

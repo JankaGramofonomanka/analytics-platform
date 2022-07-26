@@ -57,7 +57,7 @@ object AnalyticsplatformRoutes {
     }
   }
 
-  def kvRoutes[F[_]: Sync](platform: KVFrontend[F], codec: JsonCodec[F]) = {
+  def kvRoutes[F[_]: Sync](ops: KVFrontend[F], codec: JsonCodec[F]) = {
 
     import codec._
 
@@ -66,7 +66,7 @@ object AnalyticsplatformRoutes {
 
     HttpRoutes.of[F] {
       case  req @ POST -> Root / "user_tags"
-        => (req.as[UserTag] flatMap platform.storeTag _) *> NoContent()
+        => (req.as[UserTag] flatMap ops.storeTag _) *> NoContent()
     
       case  POST -> Root / "user_profiles" / CookieVar(cookie)
                                           :? TimeRangeMatcher(timeRange)
@@ -74,7 +74,7 @@ object AnalyticsplatformRoutes {
         => {
           // TODO: replace 200 with a constant or whatever
           val limit = optLimit.getOrElse(200)
-          platform.getProfile(cookie, timeRange, limit) flatMap (x => Ok(x))
+          ops.getProfile(cookie, timeRange, limit) flatMap (x => Ok(x))
         }
 
       case  POST -> Root / "aggregates" :? TimeRangeMatcher(timeRange)
@@ -86,9 +86,9 @@ object AnalyticsplatformRoutes {
                                         +& OptCategoryIdMatcher(categoryId)
         => {
           val aggregates = List(Some(aggregate1), optAggregate2).flatten.distinct
-          val count = if (aggregates.contains(COUNT)) true else false
-          val sumPrice = if (aggregates.contains(SUM_PRICE)) true else false
-          platform.getAggregates(
+          val count     = if (aggregates.contains(COUNT)) true else false
+          val sumPrice  = if (aggregates.contains(SUM_PRICE)) true else false
+          ops.getAggregates(
             timeRange,
             action,
             count,
