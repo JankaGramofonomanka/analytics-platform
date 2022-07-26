@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.KV
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
 

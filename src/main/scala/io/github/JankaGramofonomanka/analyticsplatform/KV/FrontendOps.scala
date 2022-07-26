@@ -1,13 +1,13 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.KV
 
 import cats.effect.Sync
 import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KeyValueDB
-import io.github.JankaGramofonomanka.analyticsplatform.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
 
-class KVFrontend[F[_]: Sync](db: KeyValueDB[F], tagTopic: TagTopic[F]) {
+class FrontendOps[F[_]: Sync](db: KeyValueDB[F], tagTopic: TagTopic[F]) {
 
   def storeTag(tag: UserTag): F[Unit] = for {
 

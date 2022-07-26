@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.KV
 
 import scala.collection.mutable.Map
 import cats.effect.IO
@@ -10,11 +10,11 @@ import java.util.Calendar
 import org.apache.commons.lang3.time.DateUtils
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KeyValueDB
-import io.github.JankaGramofonomanka.analyticsplatform.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
 
 
-object KVMock {
+object Mock {
 
   val profiles: Map[Cookie, SimpleProfile] = Map()
   val aggregates: Map[AggregateInfo, AggregateValue] = Map()

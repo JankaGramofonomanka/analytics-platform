@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.KV
 
 import cats.effect.Sync
 import cats.implicits._
@@ -6,34 +6,13 @@ import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KVFrontend
+import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.codecs.Query._
 import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec
 
-object AnalyticsplatformRoutes {
+object Routes {
 
-  def mockRoutes[F[_]: Sync]: HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
-    import dsl._
-    HttpRoutes.of[F] {
-      case        POST -> Root / "user_tags" => NoContent()
-      case req @  POST -> Root / "user_profiles" / CookieVar(_)
-                                                :? TimeRangeMatcher(_)
-                                                +& OptLimitMatcher(_)
-        => Ok(req.body)
-      
-      case req @  POST -> Root / "aggregates" :? TimeRangeMatcher(_)
-                                              +& ActionMatcher(_)
-                                              +& AggregateMatcher(_)
-                                              +& OptAggregateMatcher(_)
-                                              +& OptOriginMatcher(_)
-                                              +& OptBrandIdMatcher(_)
-                                              +& OptCategoryIdMatcher(_)
-        => Ok(req.body)
-    }
-  }
-
-  def kvRoutes[F[_]: Sync](ops: KVFrontend[F], codec: JsonCodec[F]) = {
+  def kvRoutes[F[_]: Sync](ops: FrontendOps[F], codec: JsonCodec[F]) = {
 
     import codec._
 
