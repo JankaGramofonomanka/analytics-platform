@@ -8,11 +8,11 @@ import org.http4s.dsl.Http4sDsl
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.codecs.Query._
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec
+import io.github.JankaGramofonomanka.analyticsplatform.codecs.EntityCodec
 
 object Routes {
 
-  def kvRoutes[F[_]: Sync](ops: FrontendOps[F], codec: JsonCodec[F]) = {
+  def kvRoutes[F[_]: Sync](ops: FrontendOps[F], codec: EntityCodec[F]) = {
 
     import codec._
 

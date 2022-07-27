@@ -1,14 +1,33 @@
 package io.github.JankaGramofonomanka.analyticsplatform
 
 import java.time.LocalDateTime
-import java.util.Date
+
+import cats.syntax.either._
 
 object Data {
   final case class Cookie(value: String) extends AnyVal
+
+  def parseLocalDateTime(s: String): Either[String, LocalDateTime]
+    = Either.catchNonFatal(LocalDateTime.parse(s)).leftMap(err => "Cannot parse datetime: " + err.getMessage)
+
   final case class TimeRange(from: LocalDateTime, to: LocalDateTime) {
     def contains(datetime: LocalDateTime): Boolean
       = from.isBefore(datetime) && datetime.isBefore(to)
   }
+
+  def parseTimeRange(s: String): Either[String, TimeRange] = {
+      val items = s.split("_")
+      for {
+
+        fromS <- Either.catchNonFatal(items(0)).leftMap(_ => "Cannot parse time range")
+        toS   <- Either.catchNonFatal(items(1)).leftMap(_ => "Cannot parse time range")
+        
+        from  <- parseLocalDateTime(fromS)
+        to    <- parseLocalDateTime(toS)
+        
+      } yield TimeRange(from, to)
+    }
+
   type Limit = Int
 
   sealed trait Action
@@ -53,7 +72,11 @@ object Data {
   )
 
   final case class SimpleProfile(tags: Array[UserTag]) {
-    def update(tag: UserTag): SimpleProfile = ???
+    def update(tag: UserTag): SimpleProfile = {
+      // TODO replace 200 with a constant or whatever
+      val newTags = (Array(tag) ++ tags).sortWith((t1, t2) => t1.time.isAfter(t2.time)).take(200)
+      SimpleProfile(newTags)
+    }
   }
 
   object SimpleProfile {
@@ -62,10 +85,9 @@ object Data {
 
   final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag])
 
-  type Bucket = Date
+  type Bucket = LocalDateTime
   final case class Aggregates(fields: AggregateFields, values: List[(Bucket, AggregateValue)])
   final case class AggregateFields(
-    timeRange: TimeRange,
     action: Action,
     count: Boolean,
     sumPrice: Boolean,

@@ -12,12 +12,12 @@ import io.github.JankaGramofonomanka.analyticsplatform.KV.Routes
 import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec
+import io.github.JankaGramofonomanka.analyticsplatform.codecs.EntityCodec
 
 
 object AnalyticsplatformServer {
 
-  def stream[F[_]: Async](db: KeyValueDB[F], topic: TagTopic[F], codec: JsonCodec[F]): Stream[F, Nothing] = {
+  def stream[F[_]: Async](db: KeyValueDB[F], topic: TagTopic[F], codec: EntityCodec[F]): Stream[F, Nothing] = {
     val ops = new FrontendOps[F](db, topic)
 
     // Combine Service Routes into an HttpApp.

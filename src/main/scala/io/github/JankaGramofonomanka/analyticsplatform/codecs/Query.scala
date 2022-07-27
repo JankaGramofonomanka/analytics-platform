@@ -3,9 +3,9 @@ package io.github.JankaGramofonomanka.analyticsplatform.codecs
 import org.http4s._
 import org.http4s.dsl.io._
 import cats.data.Validated
+import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import java.time.LocalDateTime
 
 object Query {
   
@@ -28,18 +28,9 @@ object Query {
   
   // TimeRange ----------------------------------------------------------------
   implicit val timeRangeDecoder: QueryParamDecoder[TimeRange] = { param =>
-    Validated
-      .catchNonFatal(parseTimeRange(param.value))
-      .leftMap(t => ParseFailure("Failed to decode time_range", t.getMessage))
-      .toValidatedNel
-
-  }
-
-  private def parseTimeRange(s: String): TimeRange = {
-    val items = s.split("_")
-    val from = LocalDateTime.parse(items(0))
-    val to = LocalDateTime.parse(items(1))
-    TimeRange(from, to)
+    parseTimeRange(param.value)
+      .toValidated.leftMap(s => ParseFailure("Cannot parse time range", s)).toValidatedNel
+    
   }
 
   object TimeRangeMatcher extends QueryParamDecoderMatcher[TimeRange](name = "time_range")

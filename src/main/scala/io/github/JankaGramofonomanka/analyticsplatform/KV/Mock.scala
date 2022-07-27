@@ -32,8 +32,9 @@ object Mock {
     private def someAndNone[A](a: A): List[Option[A]] = List(Some(a), None)
 
     def fromTag(tag: UserTag): List[AggregateInfo] = {
-      val bucket = DateUtils.round(tag.time, Calendar.MINUTE)
-
+      val rounded = DateUtils.round(tag.time, Calendar.MINUTE)
+      val bucket = LocalDateTime.ofInstant(rounded.toInstant, ZoneId.systemDefault())
+      
       for {
         optOrigin     <- someAndNone(tag.origin)
         optBrandId    <- someAndNone(tag.productInfo.brandId)
@@ -67,7 +68,6 @@ object Mock {
       val m = aggregates.filter(t => filterFunc(t._1))
       val values = m.toList.map(t => (t._1.bucket, t._2))
       val fields = AggregateFields(
-        timeRange,
         action,
         count,
         sumPrice,
@@ -86,8 +86,7 @@ object Mock {
       brandId:    Option[BrandId],
       categoryId: Option[CategoryId],
     ): AggregateInfo => Boolean = info => {
-      val dt = LocalDateTime.ofInstant(info.bucket.toInstant, ZoneId.systemDefault())
-      (   timeRange.contains(dt)
+      (   timeRange.contains(info.bucket)
       &&  info.action     == action
       &&  info.origin     == origin
       &&  info.brandId    == brandId
