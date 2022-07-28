@@ -80,11 +80,11 @@ object JsonCodec {
   }
 
 
-  implicit val userTagDecoder       = deriveConfiguredDecoder[UserTag]
-  implicit val userTagEncoder       = deriveConfiguredEncoder[UserTag]
-
   implicit val productInfoDecoder   = deriveConfiguredDecoder[ProductInfo]
   implicit val productInfoEncoder   = deriveConfiguredEncoder[ProductInfo]
+
+  implicit val userTagDecoder       = deriveConfiguredDecoder[UserTag]
+  implicit val userTagEncoder       = deriveConfiguredEncoder[UserTag]
 
   implicit val prettyProfileDecoder = deriveConfiguredDecoder[PrettyProfile]
   implicit val prettyProfileEncoder = deriveConfiguredEncoder[PrettyProfile]

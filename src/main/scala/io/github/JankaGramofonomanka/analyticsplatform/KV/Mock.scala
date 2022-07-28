@@ -5,7 +5,7 @@ import cats.effect.IO
 import cats.implicits._
 
 import java.time.{LocalDateTime, ZoneId}
-import java.util.Calendar
+import java.util.{Calendar, Date}
 
 import org.apache.commons.lang3.time.DateUtils
 
@@ -31,9 +31,17 @@ object Mock {
   object AggregateInfo {
     private def someAndNone[A](a: A): List[Option[A]] = List(Some(a), None)
 
+    private def round(dt: LocalDateTime): LocalDateTime = {
+      val zone = ZoneId.systemDefault
+      
+      val toRound = Date.from(dt.atZone(zone).toInstant)
+      val rounded = DateUtils.round(toRound, Calendar.MINUTE)
+      LocalDateTime.ofInstant(rounded.toInstant, zone)
+      
+    }
+
     def fromTag(tag: UserTag): List[AggregateInfo] = {
-      val rounded = DateUtils.round(tag.time, Calendar.MINUTE)
-      val bucket = LocalDateTime.ofInstant(rounded.toInstant, ZoneId.systemDefault())
+      val bucket = round(tag.time)
       
       for {
         optOrigin     <- someAndNone(tag.origin)
