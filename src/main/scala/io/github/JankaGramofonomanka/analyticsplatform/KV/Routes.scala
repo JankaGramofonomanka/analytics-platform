@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.KV
 
 import cats.effect.Sync
+import cats.data.Validated.{Valid, Invalid}
 import cats.implicits._
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
@@ -31,31 +32,34 @@ object Routes {
           val limit = optLimit.getOrElse(200)
           ops.getProfile(cookie, timeRange, limit) flatMap (x => Ok(x))
         }
-
+        
       case  POST -> Root / "aggregates" :? TimeRangeMatcher(timeRange)
                                         +& ActionMatcher(action)
-                                        +& AggregateMatcher(aggregate1)
-                                        +& OptAggregateMatcher(optAggregate2)
+                                        +& AggregatesMatcher(aggregates)
                                         +& OptOriginMatcher(origin)
                                         +& OptBrandIdMatcher(brandId)
                                         +& OptCategoryIdMatcher(categoryId)
-        => {
-          val aggregates = List(Some(aggregate1), optAggregate2).flatten.distinct
-          val count     = if (aggregates.contains(COUNT)) true else false
-          val sumPrice  = if (aggregates.contains(SUM_PRICE)) true else false
-          ops.getAggregates(
-            timeRange,
-            action,
-            count,
-            sumPrice,
-            origin,
-            brandId,
-            categoryId,
-          ) flatMap (x => Ok(x))
+        => aggregates match {
+
+          case Valid(aggregates) => {
+            val count     = if (aggregates.contains(COUNT))     true else false
+            val sumPrice  = if (aggregates.contains(SUM_PRICE)) true else false
+            ops.getAggregates(
+              timeRange,
+              action,
+              count,
+              sumPrice,
+              origin,
+              brandId,
+              categoryId,
+            ) flatMap (x => Ok(x))
+          }
+
+          // TODO move message to errors file or sth
+          case Invalid(_) => BadRequest("Cannot parse parameter(s): `aggregates`")
+          
         }
-
     }
-
   }
 }
 

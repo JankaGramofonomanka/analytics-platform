@@ -57,8 +57,7 @@ object Query {
     case s            => Validated.Invalid(ParseFailure("Failed to decode aggregates", s"unknown aggregate: $s")).toValidatedNel
   } }
 
-  object AggregateMatcher extends QueryParamDecoderMatcher[Aggregate](name = "aggregates")
-  object OptAggregateMatcher extends OptionalQueryParamDecoderMatcher[Aggregate](name = "aggregates")
+  object AggregatesMatcher extends OptionalMultiQueryParamDecoderMatcher[Aggregate](name = "aggregates")
 
 
   // Origin -------------------------------------------------------------------

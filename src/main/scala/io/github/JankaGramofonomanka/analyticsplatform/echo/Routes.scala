@@ -20,8 +20,7 @@ object Routes {
       
       case req @  POST -> Root / "aggregates" :? TimeRangeMatcher(_)
                                               +& ActionMatcher(_)
-                                              +& AggregateMatcher(_)
-                                              +& OptAggregateMatcher(_)
+                                              +& AggregatesMatcher(_)
                                               +& OptOriginMatcher(_)
                                               +& OptBrandIdMatcher(_)
                                               +& OptCategoryIdMatcher(_)
