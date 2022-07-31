@@ -1,6 +1,6 @@
-package io.github.JankaGramofonomanka.analyticsplatform.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 
 trait AggregatesDB[F[_]] {
 

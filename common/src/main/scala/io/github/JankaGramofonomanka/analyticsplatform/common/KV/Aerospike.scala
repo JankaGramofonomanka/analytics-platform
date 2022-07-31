@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import cats.effect.IO
 import cats.implicits._
@@ -9,12 +9,12 @@ import com.aerospike.client.policy.{Policy, WritePolicy}
 import io.circe.syntax._
 import io.circe.parser._
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec.simpleProfileDecoder
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec.simpleProfileEncoder
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec.aggregateInfoEncoder
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec.aggregateValueDecoder
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.simpleProfileDecoder
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.simpleProfileEncoder
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.aggregateInfoEncoder
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.aggregateValueDecoder
 
 object Aerospike {
 
@@ -42,7 +42,6 @@ object Aerospike {
     }
     
     private def decodeProfile(record: Record): Option[SimpleProfile] = {
-      println(s"$record")
       val obj = checkForNull(record.bins.get(config.profileBinName))
       
       obj.map {
@@ -52,7 +51,6 @@ object Aerospike {
           val bytes = obj.asInstanceOf[Array[Byte]]
           val str = new String(bytes)
           val decodeResult = decode[SimpleProfile](str)
-          println(s"$decodeResult")
 
           // TODO propagate the error?
           decodeResult match {
@@ -65,10 +63,7 @@ object Aerospike {
 
     private def encodeProfile(profile: SimpleProfile): Bin = {
       val name = config.profileBinName
-      //val value: Array[Byte] = profile.asJson.noSpaces.toString.getBytes
-      val str = profile.asJson.noSpaces.toString
-      println(s"profile.asJson: $str")
-      val value: Array[Byte] = str.getBytes
+      val value: Array[Byte] = profile.asJson.noSpaces.toString.getBytes
       new Bin(name, value)
     }
 

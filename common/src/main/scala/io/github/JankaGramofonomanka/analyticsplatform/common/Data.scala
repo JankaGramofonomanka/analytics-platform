@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import java.time.{LocalDateTime, ZoneId}
 import java.time.temporal.ChronoUnit

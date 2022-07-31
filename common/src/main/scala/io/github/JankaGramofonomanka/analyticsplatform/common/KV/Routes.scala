@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import cats.effect.Sync
 import cats.data.Validated.{Valid, Invalid}
@@ -6,10 +6,10 @@ import cats.implicits._
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.Query._
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.EntityCodec
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Query._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
 
 object Routes {
 
@@ -55,7 +55,7 @@ object Routes {
             ) flatMap (x => Ok(x))
           }
 
-          // TODO move message to errors file or sth
+          // TODO move literal to errors file or sth
           case Invalid(_) => BadRequest("Cannot parse parameter(s): `aggregates`")
           
         }

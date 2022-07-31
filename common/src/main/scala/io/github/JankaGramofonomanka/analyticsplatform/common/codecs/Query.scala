@@ -1,11 +1,11 @@
-package io.github.JankaGramofonomanka.analyticsplatform.codecs
+package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 
 import org.http4s._
 import org.http4s.dsl.io._
 import cats.data.Validated
 import cats.implicits._
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 
 object Query {
   

@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.codecs
+package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 
 import cats.effect.IO
 
@@ -8,8 +8,8 @@ import io.circe.syntax._
 
 
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.JsonCodec
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec
 
 abstract class EntityCodec[F[_]] {
   implicit val productInfoDecoder: EntityDecoder[F, ProductInfo]

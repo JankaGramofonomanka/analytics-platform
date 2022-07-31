@@ -1,13 +1,14 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.frontend
 
 import cats.effect.{ExitCode, IO, IOApp}
 
 import com.aerospike.client.{AerospikeClient, Host}
 import com.aerospike.client.policy.{Policy, WritePolicy, ClientPolicy}
 
-import io.github.JankaGramofonomanka.analyticsplatform.KV.Mock
-import io.github.JankaGramofonomanka.analyticsplatform.KV.Aerospike
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.IOEntityCodec
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Mock
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Aerospike
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.IOEntityCodec
+import io.github.JankaGramofonomanka.analyticsplatform.common.AnalyticsplatformServer
 
 object Main extends IOApp {
   def run(args: List[String]) =

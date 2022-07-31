@@ -1,12 +1,12 @@
-package io.github.JankaGramofonomanka.analyticsplatform.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import scala.collection.mutable.Map
 import cats.effect.IO
 import cats.implicits._
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
 
 
 object Mock {
@@ -70,7 +70,6 @@ object Mock {
   object Topic extends TagTopic[IO] {
 
     private def getAggregate(info: AggregateInfo): IO[AggregateValue]
-      // TODO: replace (0, 0) with a constant or whatever
       = IO.delay(aggregates.get(info).getOrElse(AggregateValue.empty))
     
     private def getAggregateKV(info: AggregateInfo): IO[(AggregateInfo, AggregateValue)] = for {

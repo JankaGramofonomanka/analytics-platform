@@ -1,6 +1,6 @@
-package io.github.JankaGramofonomanka.analyticsplatform
+package io.github.JankaGramofonomanka.analyticsplatform.common
 
-import cats.effect.{Async, Resource}
+import cats.effect.{Async, Resource, ExitCode}
 import cats.syntax.all._
 import com.comcast.ip4s._
 import fs2.Stream
@@ -8,16 +8,21 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
-import io.github.JankaGramofonomanka.analyticsplatform.KV.Routes
-import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
-import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.EntityCodec
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Routes
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
 
 
 object AnalyticsplatformServer {
 
-  def stream[F[_]: Async](profiles: ProfilesDB[F], aggregates: AggregatesDB[F], topic: TagTopic[F], codec: EntityCodec[F]): Stream[F, Nothing] = {
+  def stream[F[_]: Async](
+    profiles: ProfilesDB[F],
+    aggregates: AggregatesDB[F],
+    topic: TagTopic[F],
+    codec: EntityCodec[F]
+  ): Stream[F, Nothing] = {
     val ops = new FrontendOps[F](profiles, aggregates, topic)
 
     // Combine Service Routes into an HttpApp.
@@ -32,7 +37,7 @@ object AnalyticsplatformServer {
     val finalHttpApp = Logger.httpApp(true, true)(httpApp)
     
     for {
-      exitCode <- Stream.resource(
+      exitCode <- Stream.resource[F, ExitCode](
         EmberServerBuilder.default[F]
           .withHost(ipv4"0.0.0.0")
           .withPort(port"8080")

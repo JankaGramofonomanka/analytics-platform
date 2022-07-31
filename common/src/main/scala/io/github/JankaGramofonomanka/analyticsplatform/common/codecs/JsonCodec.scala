@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.codecs
+package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 
 import io.circe._
 import io.circe.generic.auto._
@@ -7,7 +7,7 @@ import io.circe.generic.extras._
 import io.circe.generic.extras.semiauto._
 
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 
 object JsonCodec {
 

@@ -1,11 +1,11 @@
-package io.github.JankaGramofonomanka.analyticsplatform.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import cats.effect.Sync
 import cats.implicits._
 
-import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
 
 class FrontendOps[F[_]: Sync](profiles: ProfilesDB[F], aggregates: AggregatesDB[F], tagTopic: TagTopic[F]) {
 

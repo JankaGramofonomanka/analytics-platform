@@ -1,10 +1,10 @@
-package io.github.JankaGramofonomanka.analyticsplatform.echo
+package io.github.JankaGramofonomanka.analyticsplatform.common.echo
 
 import cats.effect.Sync
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
-import io.github.JankaGramofonomanka.analyticsplatform.codecs.Query._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Query._
 
 object Routes {
 
