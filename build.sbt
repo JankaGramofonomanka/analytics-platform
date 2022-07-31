@@ -25,6 +25,7 @@ lazy val root = (project in file("."))
       "io.circe"            %% "circe-generic"        % CirceVersion,
       "io.circe"            %% "circe-literal"        % CirceVersion,
       "io.circe"            %% "circe-generic-extras" % CirceVersion,
+      "io.circe"            %% "circe-parser"         % CirceVersion,
 
       "org.scalameta"       %% "munit"                % MunitVersion            % Test,
       "org.typelevel"       %% "munit-cats-effect-3"  % MunitCatsEffectVersion  % Test,

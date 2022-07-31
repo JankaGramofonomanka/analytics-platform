@@ -28,7 +28,7 @@ object Query {
   
   // TimeRange ----------------------------------------------------------------
   implicit val timeRangeDecoder: QueryParamDecoder[TimeRange] = { param =>
-    parseTimeRange(param.value)
+    TimeRange.parse(param.value)
       .toValidated.leftMap(s => ParseFailure("Cannot parse time range", s)).toValidatedNel
     
   }

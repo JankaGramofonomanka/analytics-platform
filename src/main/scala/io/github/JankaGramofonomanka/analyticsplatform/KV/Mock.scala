@@ -4,13 +4,8 @@ import scala.collection.mutable.Map
 import cats.effect.IO
 import cats.implicits._
 
-import java.time.{LocalDateTime, ZoneId}
-import java.util.{Calendar, Date}
-
-import org.apache.commons.lang3.time.DateUtils
-
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
 
 
@@ -19,41 +14,9 @@ object Mock {
   val profiles: Map[Cookie, SimpleProfile] = Map()
   val aggregates: Map[AggregateInfo, AggregateValue] = Map()
 
-
-  case class AggregateInfo(
-    bucket:     Bucket,
-    action:     Action,
-    origin:     Option[Origin],
-    brandId:    Option[BrandId],
-    categoryId: Option[CategoryId],
-  )
-  
-  object AggregateInfo {
-    private def someAndNone[A](a: A): List[Option[A]] = List(Some(a), None)
-
-    private def round(dt: LocalDateTime): LocalDateTime = {
-      val zone = ZoneId.systemDefault
-      
-      val toRound = Date.from(dt.atZone(zone).toInstant)
-      val rounded = DateUtils.round(toRound, Calendar.MINUTE)
-      LocalDateTime.ofInstant(rounded.toInstant, zone)
-      
-    }
-
-    def fromTag(tag: UserTag): List[AggregateInfo] = {
-      val bucket = round(tag.time)
-      
-      for {
-        optOrigin     <- someAndNone(tag.origin)
-        optBrandId    <- someAndNone(tag.productInfo.brandId)
-        optCategoryId <- someAndNone(tag.productInfo.categoryId)
-      } yield AggregateInfo(bucket, tag.action, optOrigin, optBrandId, optCategoryId)
-    }
-
-  }
   
 
-  object DB extends KeyValueDB[IO] {
+  object DB extends ProfilesDB[IO] with AggregatesDB[IO] {
     
 
     def getProfile(cookie: Cookie): IO[SimpleProfile]
@@ -94,7 +57,7 @@ object Mock {
       brandId:    Option[BrandId],
       categoryId: Option[CategoryId],
     ): AggregateInfo => Boolean = info => {
-      (   timeRange.contains(info.bucket)
+      (   timeRange.contains(info.bucket.toTimestamp)
       &&  info.action     == action
       &&  info.origin     == origin
       &&  info.brandId    == brandId

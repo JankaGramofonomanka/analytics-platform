@@ -10,15 +10,15 @@ import org.http4s.server.middleware.Logger
 
 import io.github.JankaGramofonomanka.analyticsplatform.KV.Routes
 import io.github.JankaGramofonomanka.analyticsplatform.KV.FrontendOps
-import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
 import io.github.JankaGramofonomanka.analyticsplatform.codecs.EntityCodec
 
 
 object AnalyticsplatformServer {
 
-  def stream[F[_]: Async](db: KeyValueDB[F], topic: TagTopic[F], codec: EntityCodec[F]): Stream[F, Nothing] = {
-    val ops = new FrontendOps[F](db, topic)
+  def stream[F[_]: Async](profiles: ProfilesDB[F], aggregates: AggregatesDB[F], topic: TagTopic[F], codec: EntityCodec[F]): Stream[F, Nothing] = {
+    val ops = new FrontendOps[F](profiles, aggregates, topic)
 
     // Combine Service Routes into an HttpApp.
     // Can also be done via a Router if you

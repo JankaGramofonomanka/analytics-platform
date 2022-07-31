@@ -4,22 +4,22 @@ import cats.effect.Sync
 import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.KV.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.KV.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.KV.TagTopic
 
-class FrontendOps[F[_]: Sync](db: KeyValueDB[F], tagTopic: TagTopic[F]) {
+class FrontendOps[F[_]: Sync](profiles: ProfilesDB[F], aggregates: AggregatesDB[F], tagTopic: TagTopic[F]) {
 
   def storeTag(tag: UserTag): F[Unit] = for {
 
-    profile <- db.getProfile(tag.cookie)
+    profile <- profiles.getProfile(tag.cookie)
     updatedProfile = profile.update(tag)
-    _ <- db.updateProfile(tag.cookie, updatedProfile)
+    _ <- profiles.updateProfile(tag.cookie, updatedProfile)
     _ <- tagTopic.publish(tag)
   } yield ()
 
 
   def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[PrettyProfile] = for {
-    profile <- db.getProfile(cookie)
+    profile <- profiles.getProfile(cookie)
     limited = profile.tags.filter(tag => timeRange.contains(tag.time)).take(limit)
     (views, buys) = limited.partition(_.action == VIEW)
     } yield PrettyProfile(cookie, views, buys)
@@ -33,5 +33,5 @@ class FrontendOps[F[_]: Sync](db: KeyValueDB[F], tagTopic: TagTopic[F]) {
       brandId:    Option[BrandId],
       categoryId: Option[CategoryId],
   ): F[Aggregates]
-    = db.getAggregates(timeRange, action, count, sumPrice, origin, brandId, categoryId)
+    = aggregates.getAggregates(timeRange, action, count, sumPrice, origin, brandId, categoryId)
 }

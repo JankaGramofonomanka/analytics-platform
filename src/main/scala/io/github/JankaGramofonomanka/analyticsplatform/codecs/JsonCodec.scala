@@ -1,7 +1,5 @@
 package io.github.JankaGramofonomanka.analyticsplatform.codecs
 
-import java.time.LocalDateTime
-
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -19,13 +17,13 @@ object JsonCodec {
   implicit val cookieDecoder: Decoder[Cookie] = Decoder.decodeString.emap { s => Right(Cookie(s)) }
   implicit val cookieEncoder: Encoder[Cookie] = Encoder.encodeString.contramap[Cookie](_.value)
 
-  implicit val datetimeDecoder: Decoder[LocalDateTime] = Decoder.decodeString.emap { s => 
-    parseLocalDateTime(s)
+  implicit val timestampDecoder: Decoder[Timestamp] = Decoder.decodeString.emap { s => 
+    Timestamp.parse(s)
   }
-  implicit val datetimeEncoder: Encoder[LocalDateTime] = Encoder.encodeString.contramap[LocalDateTime](_.toString)
+  implicit val timestampEncoder: Encoder[Timestamp] = Encoder.encodeString.contramap[Timestamp](_.value.toString)
   
 
-  implicit val timeRangeDecoder: Decoder[TimeRange] = Decoder.decodeString.emap { s => parseTimeRange(s) }
+  implicit val timeRangeDecoder: Decoder[TimeRange] = Decoder.decodeString.emap { s => TimeRange.parse(s) }
 
   implicit val actionDecoder: Decoder[Action] = Decoder.decodeString.emap { 
     case "VIEW" => Right(VIEW)
@@ -86,6 +84,9 @@ object JsonCodec {
   implicit val userTagDecoder       = deriveConfiguredDecoder[UserTag]
   implicit val userTagEncoder       = deriveConfiguredEncoder[UserTag]
 
+  implicit val simpleProfileDecoder = deriveConfiguredDecoder[SimpleProfile]
+  implicit val simpleProfileEncoder = deriveConfiguredEncoder[SimpleProfile]
+
   implicit val prettyProfileDecoder = deriveConfiguredDecoder[PrettyProfile]
   implicit val prettyProfileEncoder = deriveConfiguredEncoder[PrettyProfile]
 
@@ -144,6 +145,13 @@ object JsonCodec {
     
     Json.fromValues(bucket ++ fields ++ sumPrice ++ count)
   }
+
+  // TODO consider more efficiend encoding ex. concatenate strings
+  implicit val aggregateInfoEncoder: Encoder[AggregateInfo] = deriveConfiguredEncoder[AggregateInfo]
+  implicit val aggregateInfoDecoder: Decoder[AggregateInfo] = deriveConfiguredDecoder[AggregateInfo]
+
+  implicit val aggregateValueEncoder: Encoder[AggregateValue] = deriveConfiguredEncoder[AggregateValue]
+  implicit val aggregateValueDecoder: Decoder[AggregateValue] = deriveConfiguredDecoder[AggregateValue]
   
 }
 
