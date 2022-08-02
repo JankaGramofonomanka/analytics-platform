@@ -3,13 +3,15 @@ import sbt._
 object Dependencies {
 
   object V {
-
-    val http4s          = "0.23.12"
-    val circe           = "0.14.2"
-    val aerospike       = "5.1.8"
+    
+    val http4s      = "0.23.12"
+    val circe       = "0.14.2"
+    val aerospike   = "5.1.8"
+    val kafka       = "2.8.0"
   }
 
   object Libs {
+
     
     val http4sEmberServer   = "org.http4s"          %% "http4s-ember-server"  % V.http4s
     val http4sEmberClient   = "org.http4s"          %% "http4s-ember-client"  % V.http4s
@@ -22,6 +24,8 @@ object Dependencies {
     val circeParser         = "io.circe"            %% "circe-parser"         % V.circe
 
     val aerospikeClient     = "com.aerospike"       % "aerospike-client"      % V.aerospike
+
+    val kafkaClient         = "org.apache.kafka"    % "kafka-clients"         % V.kafka
     
     val svmSubs             = "org.scalameta"       %% "svm-subs"             % "20.2.0"
     val apacheCommons       = "org.apache.commons"  % "commons-lang3"         % "3.12.0"

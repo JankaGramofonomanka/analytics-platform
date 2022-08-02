@@ -10,8 +10,31 @@ lazy val commonSettings = Seq(
     "-Ymacro-annotations",
   ),
 
-  addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.13.2" cross CrossVersion.full),
-  addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
+  libraryDependencies ++= Seq(
+
+    Libs.http4sEmberServer,
+    Libs.http4sEmberClient,
+    Libs.http4sCirce,
+    Libs.http4sDSL,
+    
+    Libs.circeGeneric,
+    Libs.circeLiteral,
+    Libs.circeGenericExtras,
+    Libs.circeParser,
+
+    Libs.aerospikeClient,
+
+    Libs.kafkaClient,
+
+    Libs.munit,
+    Libs.munitCatsEffect3,
+    Libs.logback,
+    Libs.svmSubs,
+    Libs.apacheCommons,
+  ),
+
+  addCompilerPlugin(Libs.kindProjector),
+  addCompilerPlugin(Libs.betterMonadicFor),
   testFrameworks += new TestFramework("munit.Framework")
 )
 
@@ -41,24 +64,6 @@ lazy val common = (project in file("common"))
   .settings(commonSettings)
   .settings(
     name := "common",
-    libraryDependencies ++= Seq(
-
-      Libs.http4sEmberServer,
-      Libs.http4sEmberClient,
-      Libs.http4sCirce,
-      Libs.http4sDSL,
-      
-      Libs.circeGeneric,
-      Libs.circeLiteral,
-      Libs.circeGenericExtras,
-      Libs.circeParser,
-
-      Libs.munit,
-      Libs.munitCatsEffect3,
-      Libs.logback,
-      Libs.svmSubs,
-      Libs.aerospikeClient,
-      Libs.apacheCommons,
-    )
+    
   )
 

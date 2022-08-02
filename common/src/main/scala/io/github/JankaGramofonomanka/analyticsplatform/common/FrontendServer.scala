@@ -8,22 +8,23 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
+import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Routes
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
 
 
-object AnalyticsplatformServer {
+object FrontendServer {
 
   def stream[F[_]: Async](
     profiles: ProfilesDB[F],
     aggregates: AggregatesDB[F],
-    topic: TagTopic[F],
+    tagsToAggregate: Topic.Publisher[F, UserTag],
     codec: EntityCodec[F]
   ): Stream[F, Nothing] = {
-    val ops = new FrontendOps[F](profiles, aggregates, topic)
+    val ops = new FrontendOps[F](profiles, aggregates, tagsToAggregate)
 
     // Combine Service Routes into an HttpApp.
     // Can also be done via a Router if you
@@ -36,6 +37,7 @@ object AnalyticsplatformServer {
     // With Middlewares in place
     val finalHttpApp = Logger.httpApp(true, true)(httpApp)
     
+    // TODO move literals somewhere
     for {
       exitCode <- Stream.resource[F, ExitCode](
         EmberServerBuilder.default[F]

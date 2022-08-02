@@ -6,7 +6,7 @@ import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
 
 
 object Mock {
@@ -67,7 +67,7 @@ object Mock {
   }
 
 
-  object Topic extends TagTopic[IO] {
+  object TagsToAggregate extends Topic.Publisher[IO, UserTag] {
 
     private def getAggregate(info: AggregateInfo): IO[AggregateValue]
       = IO.delay(aggregates.get(info).getOrElse(AggregateValue.empty))

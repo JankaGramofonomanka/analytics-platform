@@ -5,16 +5,20 @@ import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.TagTopic
+import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
 
-class FrontendOps[F[_]: Sync](profiles: ProfilesDB[F], aggregates: AggregatesDB[F], tagTopic: TagTopic[F]) {
+class FrontendOps[F[_]: Sync](
+  profiles: ProfilesDB[F],
+  aggregates: AggregatesDB[F],
+  tagsToAggregate: Topic.Publisher[F, UserTag]
+) {
 
   def storeTag(tag: UserTag): F[Unit] = for {
 
     profile <- profiles.getProfile(tag.cookie)
     updatedProfile = profile.update(tag)
     _ <- profiles.updateProfile(tag.cookie, updatedProfile)
-    _ <- tagTopic.publish(tag)
+    _ <- tagsToAggregate.publish(tag)
   } yield ()
 
 
