@@ -2,6 +2,7 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import cats.effect.IO
 
+
 import com.aerospike.client.{AerospikeClient, Key, Record, Bin}
 import com.aerospike.client.policy.{Policy, WritePolicy}
 
@@ -10,10 +11,7 @@ import io.circe.parser._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.simpleProfileDecoder
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.simpleProfileEncoder
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.aggregateInfoEncoder
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec.aggregateValueDecoder
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec._
 
 object Aerospike {
 
@@ -26,6 +24,7 @@ object Aerospike {
     profileBinName: String,
     aggregateBinName: String,
   )
+  
 
   class DB(client: AerospikeClient, config: Config) extends ProfilesDB[IO] with AggregatesDB[IO] {
 
@@ -38,6 +37,11 @@ object Aerospike {
       for {
         record <- IO.delay(client.get(config.readPolicy, key))
       } yield checkForNull(record)
+    }
+
+    private def putBin(keyS: String, bin: Bin): IO[Unit] = {
+      val key = mkKey(keyS)
+      IO.delay(client.put(config.writePolicy, key, bin))
     }
     
     private def decodeProfile(record: Record): Option[SimpleProfile] = {
@@ -66,8 +70,15 @@ object Aerospike {
       new Bin(name, value)
     }
 
-    // TODO probably need to export because the other module will use theese
+    // TODO export to codecs
     private def encodeAggregateInfo(info: AggregateInfo): String = info.asJson.noSpaces.toString
+
+    private def encodeAggregateValue(aggregateValue: AggregateValue): Bin = {
+      val name = config.aggregateBinName
+      val value: Array[Byte] = aggregateValue.asJson.noSpaces.toString.getBytes
+      new Bin(name, value)
+    }
+    
     private def decodeAggregateValue(record: Record): Option[AggregateValue] = {
       val obj = checkForNull(record.bins.get(config.aggregateBinName))
 
@@ -92,17 +103,17 @@ object Aerospike {
       profile <- IO.delay(record.map(r => decodeProfile(r).getOrElse(SimpleProfile.default)))
     } yield profile.getOrElse(SimpleProfile.default)
 
-    def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit] = {
-      val key = mkKey(cookie.value)
-      val bin = encodeProfile(profile)
-      IO.delay(client.put(config.writePolicy, key, bin))
-    }
+    def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit]
+      = putBin(cookie.value, encodeProfile(profile))
 
     def getAggregate(info: AggregateInfo): IO[AggregateValue] = for {
       record <- getRecord(encodeAggregateInfo(info))
       value = record.flatMap(r => decodeAggregateValue(r))
 
     } yield value.getOrElse(AggregateValue.default)
+
+    def updateAggregate(info: AggregateInfo, value: AggregateValue): IO[Unit]
+      = putBin(encodeAggregateInfo(info), encodeAggregateValue(value))
 
   }
   

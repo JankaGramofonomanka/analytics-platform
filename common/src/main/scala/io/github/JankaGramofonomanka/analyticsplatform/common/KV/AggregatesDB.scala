@@ -9,6 +9,8 @@ trait AggregatesDB[F[_]] {
 
   def getAggregate(info: AggregateInfo): F[AggregateValue]
 
+  def updateAggregate(info: AggregateInfo, value: AggregateValue): F[Unit]
+
   def getAggregates(
       timeRange:  TimeRange,
       action:     Action,

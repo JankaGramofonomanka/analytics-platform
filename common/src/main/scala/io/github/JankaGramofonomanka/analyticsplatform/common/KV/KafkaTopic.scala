@@ -34,15 +34,14 @@ object KafkaTopic {
   class Subscriber(consumer: KafkaConsumer[String, UserTag])
   extends Topic.Subscriber[IO, UserTag] {
     
-    def subscribe: Stream[IO, UserTag] = {
+    def subscribe: Stream[IO, UserTag] = Stream.evalSeq {
     
-      val singlePoll = IO.delay {
+      IO.delay {
         // TODO move literal somewhere
         val records = consumer.poll(Duration.ofMillis(100))
         records.asScala.map(_.value).toSeq
       }
 
-      Stream.evalSeq(singlePoll).repeat
-    }
+    }.repeat
   }
 }

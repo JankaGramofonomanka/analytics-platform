@@ -28,6 +28,11 @@ object Mock {
     def getAggregate(info: AggregateInfo): IO[AggregateValue]
       = IO.delay(aggregates.get(info).getOrElse(AggregateValue.default))
     
+    def updateAggregate(info: AggregateInfo, value: AggregateValue): IO[Unit]
+      = IO.delay{
+          aggregates.put(info, value)
+          ()
+        }
   }
 
 
