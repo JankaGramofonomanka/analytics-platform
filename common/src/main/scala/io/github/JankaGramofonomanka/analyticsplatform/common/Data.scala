@@ -118,8 +118,7 @@ object Data {
   }
 
   object SimpleProfile {
-    val empty: SimpleProfile = SimpleProfile(Array())
-    val default: SimpleProfile = empty
+    val default: SimpleProfile = SimpleProfile(Array())
   }
 
   final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag])
@@ -136,8 +135,7 @@ object Data {
 
   final case class AggregateValue(count: Int, sumPrice: Price)
   object AggregateValue {
-    val empty: AggregateValue = AggregateValue(0, Price(0))
-    val default: AggregateValue = empty
+    val default: AggregateValue = AggregateValue(0, Price(0))
   }
 
 

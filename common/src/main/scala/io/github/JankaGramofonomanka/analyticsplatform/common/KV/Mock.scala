@@ -20,57 +20,21 @@ object Mock {
     
 
     def getProfile(cookie: Cookie): IO[SimpleProfile]
-      = IO.delay(profiles.get(cookie).getOrElse(SimpleProfile.empty))
+      = IO.delay(profiles.get(cookie).getOrElse(SimpleProfile.default))
 
     def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit]
       = IO.delay(profiles.addOne((cookie, profile)))
+
+    def getAggregate(info: AggregateInfo): IO[AggregateValue]
+      = IO.delay(aggregates.get(info).getOrElse(AggregateValue.default))
     
-    def getAggregates(
-        timeRange:  TimeRange,
-        action:     Action,
-        count:      Boolean,
-        sumPrice:   Boolean,
-        origin:     Option[Origin],
-        brandId:    Option[BrandId],
-        categoryId: Option[CategoryId],
-    ): IO[Aggregates] = IO.delay({
-
-      val filterFunc = filterAggregateInfo(timeRange, action, origin, brandId, categoryId)
-      val m = aggregates.filter(t => filterFunc(t._1))
-      val values = m.toList.map(t => (t._1.bucket, t._2))
-      val fields = AggregateFields(
-        action,
-        count,
-        sumPrice,
-        origin,
-        brandId,
-        categoryId,
-      )
-
-      Aggregates(fields, values)
-    })
-
-    private def filterAggregateInfo(
-      timeRange:  TimeRange,
-      action:     Action,
-      origin:     Option[Origin],
-      brandId:    Option[BrandId],
-      categoryId: Option[CategoryId],
-    ): AggregateInfo => Boolean = info => {
-      (   timeRange.contains(info.bucket.toTimestamp)
-      &&  info.action     == action
-      &&  info.origin     == origin
-      &&  info.brandId    == brandId
-      &&  info.categoryId == categoryId
-      )
-    }
   }
 
 
   object TagsToAggregate extends Topic.Publisher[IO, UserTag] {
 
     private def getAggregate(info: AggregateInfo): IO[AggregateValue]
-      = IO.delay(aggregates.get(info).getOrElse(AggregateValue.empty))
+      = IO.delay(aggregates.get(info).getOrElse(AggregateValue.default))
     
     private def getAggregateKV(info: AggregateInfo): IO[(AggregateInfo, AggregateValue)] = for {
       v <- getAggregate(info)

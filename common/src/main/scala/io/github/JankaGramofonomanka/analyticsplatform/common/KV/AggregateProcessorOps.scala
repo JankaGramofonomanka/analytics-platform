@@ -10,13 +10,17 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
 
 class AggregateProcessorOps[F[_]](tagsToAggregate: Topic.Subscriber[F, UserTag]) {
 
-  def processTags: Stream[F, ExitCode] = for {
-    tag <- tagsToAggregate.subscribe
-    c <- implicitly[Monad[Stream[F, *]]].pure {
+  private def processTag(tag: UserTag): Stream[F, ExitCode] = {
+    implicitly[Monad[Stream[F, *]]].pure {
       println(s"tag: $tag")
       ExitCode.Success
     }
-  } yield c
+  }
+
+  def processTags: Stream[F, ExitCode] = for {
+    tag <- tagsToAggregate.subscribe
+    exitCode <- processTag(tag)
+  } yield exitCode
 }
 
 

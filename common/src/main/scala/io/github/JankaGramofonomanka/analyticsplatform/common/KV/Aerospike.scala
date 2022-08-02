@@ -1,7 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common.KV
 
 import cats.effect.IO
-import cats.implicits._
 
 import com.aerospike.client.{AerospikeClient, Key, Record, Bin}
 import com.aerospike.client.policy.{Policy, WritePolicy}
@@ -99,30 +98,14 @@ object Aerospike {
       IO.delay(client.put(config.writePolicy, key, bin))
     }
 
-    def getAggregates(
-        timeRange:  TimeRange,
-        action:     Action,
-        count:      Boolean,
-        sumPrice:   Boolean,
-        origin:     Option[Origin],
-        brandId:    Option[BrandId],
-        categoryId: Option[CategoryId],
-    ): IO[Aggregates] = {
-      val buckets = timeRange.getBuckets
-      val infos = buckets.map(bucket => AggregateInfo(bucket, action, origin, brandId, categoryId))
-      val fields = AggregateFields(action, count, sumPrice, origin, brandId, categoryId)
-      for {
-        records <- infos.traverse { info => getRecord(encodeAggregateInfo(info)) }
+    def getAggregate(info: AggregateInfo): IO[AggregateValue] = for {
+      record <- getRecord(encodeAggregateInfo(info))
+      value = record.flatMap(r => decodeAggregateValue(r))
 
-        aggregateValues = records
-          .map(_.flatMap(r => decodeAggregateValue(r))
-                .getOrElse(AggregateValue.default)
-              )
-        values = buckets.zip(aggregateValues)
-        
-      } yield Aggregates(fields, values)
-    }
+    } yield value.getOrElse(AggregateValue.default)
+
   }
+  
 
 
 
