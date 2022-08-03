@@ -8,6 +8,9 @@ import cats.syntax.either._
 
 import org.apache.commons.lang3.time.DateUtils
 
+import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config
+
 object Data {
   final case class Cookie(value: String) extends AnyVal
 
@@ -24,7 +27,7 @@ object Data {
   object Timestamp {
     def parse(s: String): Either[String, Timestamp]
       = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s)))
-        .leftMap(err => "Cannot parse datetime: " + err.getMessage)
+        .leftMap(err => cannotParseWithMsg("datetime", err.getMessage))
   }
 
   final case class Bucket(value: LocalDateTime) extends AnyVal {
@@ -56,8 +59,8 @@ object Data {
       val items = s.split("_")
       for {
 
-        fromS <- Either.catchNonFatal(items(0)).leftMap(_ => "Cannot parse time range")
-        toS   <- Either.catchNonFatal(items(1)).leftMap(_ => "Cannot parse time range")
+        fromS <- Either.catchNonFatal(items(0)).leftMap(_ => cannotParse("time range"))
+        toS   <- Either.catchNonFatal(items(1)).leftMap(_ => cannotParse("time range"))
         
         from  <- Timestamp.parse(fromS)
         to    <- Timestamp.parse(toS)
@@ -72,9 +75,39 @@ object Data {
   object VIEW extends Action
   object BUY extends Action
 
+  object Action {
+
+    def parse(s: String): Either[String, Action] = s match {
+      case "VIEW" => Right(VIEW)
+      case "BUY"  => Right(BUY)
+      case s      => Left(unknown("action", s))
+    }
+
+    def encode(action: Action): String = action match {
+      case VIEW => "VIEW"
+      case BUY  => "BUY"
+    }
+
+  }
+
   sealed trait Aggregate
   object COUNT extends Aggregate
   object SUM_PRICE extends Aggregate
+
+  object Aggregate {
+    
+    def parse(s: String): Either[String, Aggregate] = s match { 
+      case "COUNT"      => Right(COUNT)
+      case "SUM_PRICE"  => Right(SUM_PRICE)
+      case s            => Left(unknown("aggregate", s))
+    }
+
+    def encode(aggregate: Aggregate): String = aggregate match {
+      case COUNT      => "COUNT"
+      case SUM_PRICE  => "SUM_PRICE"
+    }
+
+  }
 
   final case class Origin(value: String)      extends AnyVal
   final case class BrandId(value: String)     extends AnyVal
@@ -91,6 +124,23 @@ object Data {
   object PC     extends Device
   object MOBILE extends Device
   object TV     extends Device
+
+  object Device {
+    
+    def parse(s: String): Either[String, Device] = s match {
+      case "PC"     => Right(PC)
+      case "MOBILE" => Right(MOBILE)
+      case "TV"     => Right(TV)
+      case s        => Left(unknown("device", s))
+    }
+    
+    def encode(device: Device): String = device match {
+      case PC     => "PC"
+      case MOBILE => "MOBILE"
+      case TV     => "TV"
+    }
+
+  }
 
   final case class UserTag(
     time:         Timestamp,
@@ -111,8 +161,10 @@ object Data {
 
   final case class SimpleProfile(tags: Array[UserTag]) {
     def update(tag: UserTag): SimpleProfile = {
-      // TODO replace 200 with a constant or whatever
-      val newTags = (Array(tag) ++ tags).sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value)).take(200)
+      // TODO figure out efficient sorting
+      val newTags = (Array(tag) ++ tags)
+                      .sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
+                      .take(Config.Other.numTagsToKeep)
       SimpleProfile(newTags)
     }
   }

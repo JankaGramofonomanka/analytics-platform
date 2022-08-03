@@ -7,6 +7,8 @@ import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config.QueryParams
+import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Query._
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
@@ -21,6 +23,7 @@ object Routes {
     import dsl._
 
     HttpRoutes.of[F] {
+
       case  req @ POST -> Root / "user_tags"
         => (req.as[UserTag] flatMap ops.storeTag _) *> NoContent()
     
@@ -28,8 +31,7 @@ object Routes {
                                           :? TimeRangeMatcher(timeRange)
                                           +& OptLimitMatcher(optLimit)
         => {
-          // TODO: replace 200 with a constant or whatever
-          val limit = optLimit.getOrElse(200)
+          val limit = optLimit.getOrElse(QueryParams.defaultLimit)
           ops.getProfile(cookie, timeRange, limit) flatMap (x => Ok(x))
         }
         
@@ -55,8 +57,7 @@ object Routes {
             ) flatMap (x => Ok(x))
           }
 
-          // TODO move literal to errors file or sth
-          case Invalid(_) => BadRequest("Cannot parse parameter(s): `aggregates`")
+          case Invalid(_) => BadRequest(failedToDecodeParameterS(QueryParams.aggregates))
           
         }
     }

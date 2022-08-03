@@ -8,6 +8,7 @@ import io.circe.generic.extras.semiauto._
 
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 
 object JsonCodec {
 
@@ -25,25 +26,17 @@ object JsonCodec {
 
   implicit val timeRangeDecoder: Decoder[TimeRange] = Decoder.decodeString.emap { s => TimeRange.parse(s) }
 
-  implicit val actionDecoder: Decoder[Action] = Decoder.decodeString.emap { 
-    case "VIEW" => Right(VIEW)
-    case "BUY"  => Right(BUY)
-    case s      => Left(f"Unknown action: $s")
-  }
-  implicit val actionEncoder: Encoder[Action] = Encoder.encodeString.contramap[Action] {
-    case VIEW => "VIEW"
-    case BUY  => "BUY"
-  }
+  implicit val actionDecoder: Decoder[Action] = Decoder.decodeString.emap(s => Action.parse(s))
+  implicit val actionEncoder: Encoder[Action]
+    = Encoder.encodeString.contramap[Action](action => Action.encode(action))
 
-  implicit val aggregateDecoder: Decoder[Aggregate] = Decoder.decodeString.emap { 
-    case "COUNT"      => Right(COUNT)
-    case "SUM_PRICE"  => Right(SUM_PRICE)
-    case s      => Left(f"Unknown aggregate: $s")
-  }
-  implicit val aggregateEncoder: Encoder[Aggregate] = Encoder.encodeString.contramap[Aggregate] {
-    case COUNT      => "COUNT"
-    case SUM_PRICE  => "SUM_PRICE"
-  }
+  implicit val aggregateDecoder: Decoder[Aggregate] = Decoder.decodeString.emap(s => Aggregate.parse(s))
+  implicit val aggregateEncoder: Encoder[Aggregate]
+    = Encoder.encodeString.contramap[Aggregate](aggregate => Aggregate.encode(aggregate))
+
+  implicit val deviceDecoder: Decoder[Device] = Decoder.decodeString.emap(s => Device.parse(s))
+  implicit val deviceEncoder: Encoder[Device]
+    = Encoder.encodeString.contramap[Device](device => Device.encode(device))
 
   
   implicit val originDecoder:     Decoder[Origin]     = Decoder.decodeString.emap { s => Right(Origin(s)) }
@@ -64,19 +57,6 @@ object JsonCodec {
   implicit val productIdDecoder:  Decoder[ProductId]  = Decoder.decodeString.emap { s => Right(ProductId(s)) }
   implicit val productIdEncoder:  Encoder[ProductId]  = Encoder.encodeString.contramap[ProductId](_.value)
 
-  
-  implicit val deviceDecoder: Decoder[Device] = Decoder.decodeString.emap { 
-    case "PC"     => Right(PC)
-    case "MOBILE" => Right(MOBILE)
-    case "TV"     => Right(TV)
-    case s        => Left(f"Unknown device: $s")
-  }
-  implicit val deviceEncoder: Encoder[Device] = Encoder.encodeString.contramap[Device] {
-    case PC     => "PC"
-    case MOBILE => "MOBILE"
-    case TV     => "TV"
-  }
-
 
   implicit val productInfoDecoder   = deriveConfiguredDecoder[ProductInfo]
   implicit val productInfoEncoder   = deriveConfiguredEncoder[ProductInfo]
@@ -93,22 +73,23 @@ object JsonCodec {
 
   implicit val aggregatesEncoder = new Encoder[Aggregates] {
     final def apply(aggregates: Aggregates): Json = Json.obj(
-      ("columns", mkColumns(aggregates.fields)),
-      ("rows",    mkRows(aggregates)),
+      (Config.Aggregates.Fields.columns,  mkColumns(aggregates.fields)),
+      (Config.Aggregates.Fields.rows,     mkRows(aggregates)),
     )
   }
 
   private def mkColumns(fields: AggregateFields): Json = {
-    val mOriginCol      = fields.origin     .map(_ => "origin")
-    val mBrandIdCol     = fields.brandId    .map(_ => "brand_id")
-    val mCategoryIdCol  = fields.categoryId .map(_ => "category_id")
+
+    val mOriginCol      = fields.origin     .map(_ => Config.Aggregates.Fields.origin)
+    val mBrandIdCol     = fields.brandId    .map(_ => Config.Aggregates.Fields.brandId)
+    val mCategoryIdCol  = fields.categoryId .map(_ => Config.Aggregates.Fields.categoryId)
     
-    val mSumPriceCol  = if (fields.sumPrice)  Some("sum_price")  else None
-    val mCountCol     = if (fields.count)     Some("count")      else None
+    val mSumPriceCol  = if (fields.sumPrice)  Some(Config.Aggregates.Fields.sumPrice) else None
+    val mCountCol     = if (fields.count)     Some(Config.Aggregates.Fields.count)    else None
     
     val columns = Vector(
-      Some("1m_bucket"),
-      Some("action"),
+      Some(Config.Aggregates.Fields.bucket),
+      Some(Config.Aggregates.Fields.action),
       mOriginCol,
       mBrandIdCol,
       mCategoryIdCol,
@@ -117,6 +98,7 @@ object JsonCodec {
     ).flatten.map(_.asJson)
 
     Json.fromValues(columns)
+
   }
 
   private def mkRows(aggregates: Aggregates): Json = {

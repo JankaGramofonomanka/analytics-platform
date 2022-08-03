@@ -2,13 +2,13 @@ package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import cats.effect.{Async, Resource, ExitCode}
 import cats.syntax.all._
-import com.comcast.ip4s._
 import fs2.Stream
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Routes
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
@@ -37,12 +37,11 @@ object FrontendServer {
     // With Middlewares in place
     val finalHttpApp = Logger.httpApp(true, true)(httpApp)
     
-    // TODO move literals somewhere
     for {
       exitCode <- Stream.resource[F, ExitCode](
         EmberServerBuilder.default[F]
-          .withHost(ipv4"0.0.0.0")
-          .withPort(port"8080")
+          .withHost(Config.Frontend.host)
+          .withPort(Config.Frontend.port)
           .withHttpApp(finalHttpApp)
           .build >>
         Resource.eval(Async[F].never)
