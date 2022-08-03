@@ -18,10 +18,10 @@ object JsonCodec {
   implicit val cookieDecoder: Decoder[Cookie] = Decoder.decodeString.emap { s => Right(Cookie(s)) }
   implicit val cookieEncoder: Encoder[Cookie] = Encoder.encodeString.contramap[Cookie](_.value)
 
-  implicit val timestampDecoder: Decoder[Timestamp] = Decoder.decodeString.emap { s => 
-    Timestamp.parse(s)
-  }
-  implicit val timestampEncoder: Encoder[Timestamp] = Encoder.encodeString.contramap[Timestamp](_.value.toString)
+  implicit val timestampDecoder: Decoder[Timestamp]
+    = Decoder.decodeString.emap { s => Timestamp.parse(s) }
+  implicit val timestampEncoder: Encoder[Timestamp]
+    = Encoder.encodeString.contramap[Timestamp](_.value.toString)
   
 
   implicit val timeRangeDecoder: Decoder[TimeRange] = Decoder.decodeString.emap { s => TimeRange.parse(s) }
@@ -58,17 +58,17 @@ object JsonCodec {
   implicit val productIdEncoder:  Encoder[ProductId]  = Encoder.encodeString.contramap[ProductId](_.value)
 
 
-  implicit val productInfoDecoder   = deriveConfiguredDecoder[ProductInfo]
-  implicit val productInfoEncoder   = deriveConfiguredEncoder[ProductInfo]
+  implicit val productInfoDecoder:    Decoder[ProductInfo]    = deriveConfiguredDecoder[ProductInfo]
+  implicit val productInfoEncoder:    Encoder[ProductInfo]    = deriveConfiguredEncoder[ProductInfo]
 
-  implicit val userTagDecoder       = deriveConfiguredDecoder[UserTag]
-  implicit val userTagEncoder       = deriveConfiguredEncoder[UserTag]
+  implicit val userTagDecoder:        Decoder[UserTag]        = deriveConfiguredDecoder[UserTag]
+  implicit val userTagEncoder:        Encoder[UserTag]        = deriveConfiguredEncoder[UserTag]
 
-  implicit val simpleProfileDecoder = deriveConfiguredDecoder[SimpleProfile]
-  implicit val simpleProfileEncoder = deriveConfiguredEncoder[SimpleProfile]
+  implicit val simpleProfileDecoder:  Decoder[SimpleProfile]  = deriveConfiguredDecoder[SimpleProfile]
+  implicit val simpleProfileEncoder:  Encoder[SimpleProfile]  = deriveConfiguredEncoder[SimpleProfile]
 
-  implicit val prettyProfileDecoder = deriveConfiguredDecoder[PrettyProfile]
-  implicit val prettyProfileEncoder = deriveConfiguredEncoder[PrettyProfile]
+  implicit val prettyProfileDecoder:  Decoder[PrettyProfile]  = deriveConfiguredDecoder[PrettyProfile]
+  implicit val prettyProfileEncoder:  Encoder[PrettyProfile]  = deriveConfiguredEncoder[PrettyProfile]
 
 
   implicit val aggregatesEncoder = new Encoder[Aggregates] {

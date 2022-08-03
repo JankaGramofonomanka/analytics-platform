@@ -16,7 +16,7 @@ object Kafka {
 
     val stringSerializer = new StringSerializer
 
-    def serialize(topic: String, data: UserTag) = {
+    def serialize(topic: String, data: UserTag): Array[Byte] = {
 
       // TODO use compression etc.
       val asString = data.asJson.noSpaces.toString
@@ -28,7 +28,7 @@ object Kafka {
   class UserTagDeserializer extends Deserializer[UserTag] {
     val stringDeserializer = new StringDeserializer
 
-    def deserialize(topic: String, data: Array[Byte]) = {
+    def deserialize(topic: String, data: Array[Byte]): UserTag = {
 
       // TODO use compression etc.
       val asString = stringDeserializer.deserialize(topic, data)
