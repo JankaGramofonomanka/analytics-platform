@@ -26,11 +26,14 @@ lazy val commonSettings = Seq(
 
     Libs.kafkaClient,
 
+    Libs.svmSubs,
+    Libs.apacheCommons,
+
+    Libs.scalatest,
     Libs.munit,
     Libs.munitCatsEffect3,
     Libs.logback,
-    Libs.svmSubs,
-    Libs.apacheCommons,
+    
   ),
 
   addCompilerPlugin(Libs.kindProjector),

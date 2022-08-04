@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import java.time.{LocalDateTime, ZoneId}
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.{Calendar, Date}
 
@@ -28,11 +29,24 @@ object Data {
     def parse(s: String): Either[String, Timestamp]
       = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s)))
         .leftMap(err => cannotParseWithMsg("datetime", err.getMessage))
+
+    def encode(ts: Timestamp): String = ts.value.format(formatter)
+
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
   }
 
   final case class Bucket(value: LocalDateTime) extends AnyVal {
     def addMinutes(n: Long): Bucket = Bucket(value.plus(n, ChronoUnit.MINUTES))
     def toTimestamp: Timestamp = Timestamp(value)
+  }
+
+  object Bucket {
+    def parse(s: String): Either[String, Bucket]
+      = Timestamp.parse(s).map(_.getBucket)
+
+    def encode(b: Bucket): String = b.value.format(formatter)
+
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
   }
 
   final case class TimeRange(from: Timestamp, to: Timestamp) {
@@ -67,6 +81,11 @@ object Data {
         
       } yield TimeRange(from, to)
     }
+
+    def encode(tr: TimeRange): String = {
+      val fromS = Timestamp.encode(tr.from)
+      val toS   = Timestamp.encode(tr.to)
+      s"${fromS}_${toS}"}
   }
 
   type Limit = Int
@@ -159,7 +178,8 @@ object Data {
     price:      Price,
   )
 
-  final case class SimpleProfile(tags: Array[UserTag]) {
+  // TODO replace array with sometyhing else so that comparing idenctical profiles returns `true`
+  final case class SimpleProfile(tags: Array[UserTag]) extends AnyVal {
     def update(tag: UserTag): SimpleProfile = {
       // TODO figure out efficient sorting
       val newTags = (Array(tag) ++ tags)

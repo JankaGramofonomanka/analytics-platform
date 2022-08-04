@@ -21,10 +21,16 @@ object JsonCodec {
   implicit val timestampDecoder: Decoder[Timestamp]
     = Decoder.decodeString.emap { s => Timestamp.parse(s) }
   implicit val timestampEncoder: Encoder[Timestamp]
-    = Encoder.encodeString.contramap[Timestamp](_.value.toString)
-  
+    = Encoder.encodeString.contramap[Timestamp](ts => Timestamp.encode(ts))
+
+  implicit val bucketDecoder: Decoder[Bucket]
+    = Decoder.decodeString.emap { s => Bucket.parse(s) }
+  implicit val bucketEncoder: Encoder[Bucket]
+    = Encoder.encodeString.contramap[Bucket](ts => Bucket.encode(ts))  
 
   implicit val timeRangeDecoder: Decoder[TimeRange] = Decoder.decodeString.emap { s => TimeRange.parse(s) }
+  implicit val timeRangeEncoder: Encoder[TimeRange]
+    = Encoder.encodeString.contramap { tr => TimeRange.encode(tr) }
 
   implicit val actionDecoder: Decoder[Action] = Decoder.decodeString.emap(s => Action.parse(s))
   implicit val actionEncoder: Encoder[Action]
