@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.kv
 
 import cats.effect.Sync
 import cats.effect.ExitCode
@@ -7,12 +7,12 @@ import cats.implicits._
 import fs2.Stream
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.AggregatesDB
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.AggregatesDB
 
 class AggregateProcessorOps[F[_]: Sync](
-  tagsToAggregate: Topic.Subscriber[F, UserTag],
-  aggregates: AggregatesDB[F],
+  aggregates:       AggregatesDB[F],
+  tagsToAggregate:  Topic.Subscriber[F, UserTag],
 ) {
 
   private def processTag(tag: UserTag): Stream[F, ExitCode] = Stream.eval {

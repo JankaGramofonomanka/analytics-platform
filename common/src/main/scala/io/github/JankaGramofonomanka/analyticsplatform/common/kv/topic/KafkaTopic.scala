@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic
 
 import cats.effect.IO
 import fs2.Stream
@@ -11,7 +11,7 @@ import scala.jdk.CollectionConverters._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 
 object KafkaTopic {
   

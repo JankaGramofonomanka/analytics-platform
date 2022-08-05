@@ -1,11 +1,11 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.kv
 
 import cats.effect.Sync
 import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 
 class FrontendOps[F[_]: Sync](
   profiles: ProfilesDB[F],
@@ -24,9 +24,8 @@ class FrontendOps[F[_]: Sync](
 
   def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[PrettyProfile] = for {
     profile <- profiles.getProfile(cookie)
-    limited = profile.tags.filter(tag => timeRange.contains(tag.time)).take(limit)
-    (views, buys) = limited.partition(_.action == VIEW)
-  } yield PrettyProfile(cookie, views, buys)
+    limited = SimpleProfile(profile.tags.filter(tag => timeRange.contains(tag.time)).take(limit))
+  } yield limited.prettify(cookie)
 
   def getAggregates(
       timeRange:  TimeRange,

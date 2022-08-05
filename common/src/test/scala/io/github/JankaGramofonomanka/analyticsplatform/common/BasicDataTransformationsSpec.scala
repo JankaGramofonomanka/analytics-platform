@@ -88,5 +88,18 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
       assert(sorted(updated.tags.toSeq))
     }
   }
+  "PrettyProfile.simplify, SimpleProfile.prettify" - {
+    "simplify . prettify" in {
+      val simple = ExampleData.simpleProfile
+      val cookie = ExampleData.cookie
+      assert(simple.prettify(cookie).simplify == simple)
+    }
+
+    "prettify . simplify" in {
+      val pretty = ExampleData.prettyProfile
+      assert(pretty.simplify.prettify(pretty.cookie) == pretty)
+    }
+    
+  }
 }
 

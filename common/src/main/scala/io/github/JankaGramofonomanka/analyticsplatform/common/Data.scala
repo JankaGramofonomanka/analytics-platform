@@ -178,14 +178,23 @@ object Data {
     price:      Price,
   )
 
+  // TODO figure out efficient sorting
+  private def sortTags(tags: Array[UserTag]): Array[UserTag]
+    = tags.sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
+
   // TODO replace `Array` with sometyhing else so that comparing idenctical profiles returns `true`
   final case class SimpleProfile(tags: Array[UserTag]) extends AnyVal {
+
+    // TODO make `Config.Other.numTagsToKeep` a parameter
     def update(tag: UserTag): SimpleProfile = {
-      // TODO figure out efficient sorting
-      val newTags = (Array(tag) ++ tags)
-                      .sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
-                      .take(Config.Other.numTagsToKeep)
+      
+      val newTags = sortTags(Array(tag) ++ tags).take(Config.Other.numTagsToKeep)
       SimpleProfile(newTags)
+    }
+
+    def prettify(cookie: Cookie): PrettyProfile = {
+      val (views, buys) = tags.partition(_.action == VIEW)
+      PrettyProfile(cookie, views, buys)
     }
   }
 
@@ -193,7 +202,10 @@ object Data {
     val default: SimpleProfile = SimpleProfile(Array())
   }
 
-  final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag])
+  // TODO replace `Array` with sometyhing else so that comparing idenctical profiles returns `true`
+  final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag]) {
+    def simplify: SimpleProfile = SimpleProfile(sortTags(views ++ buys))
+  }
 
   final case class Aggregates(fields: AggregateFields, values: List[(Bucket, AggregateValue)])
   final case class AggregateFields(

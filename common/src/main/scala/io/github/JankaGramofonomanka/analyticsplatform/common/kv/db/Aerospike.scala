@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.kv.db
 
 import cats.effect.IO
 
@@ -8,7 +8,7 @@ import com.aerospike.client.policy.{Policy, WritePolicy}
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils._
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCodec
 
 
