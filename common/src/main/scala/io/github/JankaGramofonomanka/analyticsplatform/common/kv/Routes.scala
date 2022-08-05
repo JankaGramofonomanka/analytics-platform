@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.KV
+package io.github.JankaGramofonomanka.analyticsplatform.common.kv
 
 import cats.effect.Sync
 import cats.data.Validated.{Valid, Invalid}
@@ -9,7 +9,7 @@ import org.http4s.dsl.Http4sDsl
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config.QueryParams
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Query._
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
 

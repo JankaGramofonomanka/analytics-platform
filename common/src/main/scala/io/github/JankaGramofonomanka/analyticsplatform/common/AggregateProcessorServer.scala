@@ -4,9 +4,9 @@ import cats.effect.Async
 import fs2.Stream
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.AggregateProcessorOps
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.AggregatesDB
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.AggregateProcessorOps
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.AggregatesDB
 
 
 

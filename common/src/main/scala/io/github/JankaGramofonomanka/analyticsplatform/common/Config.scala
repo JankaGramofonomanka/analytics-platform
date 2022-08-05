@@ -8,7 +8,7 @@ import org.apache.kafka.common.serialization.{StringSerializer, StringDeserializ
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.clients.consumer._
 
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Aerospike.{Config => AerospikeConfig}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike.{Config => AerospikeConfig}
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Kafka._
 
 object Config {

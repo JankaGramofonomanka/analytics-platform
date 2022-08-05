@@ -9,10 +9,10 @@ import org.http4s.server.middleware.Logger
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Routes
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.FrontendOps
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.{ProfilesDB, AggregatesDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.KV.Topic
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.Routes
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.FrontendOps
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.EntityCodec
 
 
