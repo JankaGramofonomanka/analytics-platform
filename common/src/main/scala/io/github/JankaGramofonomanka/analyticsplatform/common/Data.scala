@@ -1,13 +1,10 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
-import java.time.{LocalDateTime, ZoneId}
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.{Calendar, Date}
 
 import cats.syntax.either._
-
-import org.apache.commons.lang3.time.DateUtils
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
@@ -17,12 +14,14 @@ object Data {
 
   final case class Timestamp(value: LocalDateTime) extends AnyVal {
     def getBucket: Bucket = {
-      val zone = ZoneId.systemDefault
-      
-      val toRound = Date.from(value.atZone(zone).toInstant)
-      val rounded = DateUtils.round(toRound, Calendar.MINUTE)
-      
-      Bucket(LocalDateTime.ofInstant(rounded.toInstant, zone))
+
+      val year    = value.getYear
+      val month   = value.getMonthValue
+      val day     = value.getDayOfMonth
+      val hour    = value.getHour
+      val minute  = value.getMinute
+
+      Bucket(LocalDateTime.of(year, month, day, hour, minute))
     }
   }
   object Timestamp {
@@ -35,6 +34,7 @@ object Data {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
   }
 
+  // TODO shouldn't `value` be private?
   final case class Bucket(value: LocalDateTime) extends AnyVal {
     def addMinutes(n: Long): Bucket = Bucket(value.plus(n, ChronoUnit.MINUTES))
     def toTimestamp: Timestamp = Timestamp(value)
@@ -51,7 +51,7 @@ object Data {
 
   final case class TimeRange(from: Timestamp, to: Timestamp) {
     def contains(datetime: Timestamp): Boolean
-      = from.value.isBefore(datetime.value) && datetime.value.isBefore(to.value)
+      = (!from.value.isAfter(datetime.value)) && datetime.value.isBefore(to.value)
 
     // TODO change `List` to something else (`Stream`?)
     def getBuckets: List[Bucket] = {
@@ -178,7 +178,7 @@ object Data {
     price:      Price,
   )
 
-  // TODO replace array with sometyhing else so that comparing idenctical profiles returns `true`
+  // TODO replace `Array` with sometyhing else so that comparing idenctical profiles returns `true`
   final case class SimpleProfile(tags: Array[UserTag]) extends AnyVal {
     def update(tag: UserTag): SimpleProfile = {
       // TODO figure out efficient sorting

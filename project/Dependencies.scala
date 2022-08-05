@@ -30,7 +30,6 @@ object Dependencies {
     val kafkaClient         = "org.apache.kafka"    % "kafka-clients"         % V.kafka
     
     val svmSubs             = "org.scalameta"       %% "svm-subs"             % "20.2.0"
-    val apacheCommons       = "org.apache.commons"  % "commons-lang3"         % "3.12.0"
 
 
     // Test

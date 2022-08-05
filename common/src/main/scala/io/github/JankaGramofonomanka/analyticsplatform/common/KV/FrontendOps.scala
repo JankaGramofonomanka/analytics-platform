@@ -26,7 +26,7 @@ class FrontendOps[F[_]: Sync](
     profile <- profiles.getProfile(cookie)
     limited = profile.tags.filter(tag => timeRange.contains(tag.time)).take(limit)
     (views, buys) = limited.partition(_.action == VIEW)
-    } yield PrettyProfile(cookie, views, buys)
+  } yield PrettyProfile(cookie, views, buys)
 
   def getAggregates(
       timeRange:  TimeRange,
