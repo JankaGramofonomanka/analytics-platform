@@ -54,8 +54,8 @@ class Mock[F[_]: Monad](
       } yield ()
     }
   }
+}
 
 object Mock {
   def default[F[_]: Monad] = new Mock[F](Map(), Map())
-
-
+}
