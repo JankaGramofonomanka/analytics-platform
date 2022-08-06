@@ -25,8 +25,14 @@ object ExampleData {
   val aggregate   = SUM_PRICE
   val device      = PC
 
-  val origin      = Origin("origin")
-  val brandId     = BrandId("Rearden-Steel")
+
+  object Brands {
+    val reardenSteel = BrandId("Rearden-Steel")
+    val wyattOil = BrandId("Wyatt-Oil")
+  }
+
+  val origin      = Origin("China")
+  val brandId     = Brands.reardenSteel
   val categoryId  = CategoryId("building-materials")
   val country     = Country("USA")
   val price       = Price(200000)

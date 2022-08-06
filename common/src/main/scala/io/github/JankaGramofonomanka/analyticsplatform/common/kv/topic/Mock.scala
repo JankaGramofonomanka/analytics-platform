@@ -21,7 +21,21 @@ class Mock[F[_]: Monad](tags: Queue[UserTag]) {
   }
 
   object Subscriber extends Topic.Subscriber[F, UserTag] {
-    def subscribe: Stream[F, UserTag] = Stream.eval(pure(tags.dequeue())).repeat
+    
+    def subscribe: Stream[F, UserTag] = {
+    
+      Stream.eval {
+        for {
+
+          // TODO make this work for all `F`s or change context bounds to ensure recomputation
+          // this forces the next step to recompute in case of `F` being `IO`
+          _ <- pure(())
+          
+          tag <- pure(tags.dequeue())
+
+        } yield tag
+      }.repeat
+    }
   }
 
 }
