@@ -53,8 +53,7 @@ object ExampleData {
   val aggregateValue  = AggregateValue(count, price)
 
   val aggregateInfo   = AggregateInfo(bucket, action, Some(origin), Some(brandId), Some(categoryId))
-  val agggregateIntem = AggregateItem(aggregateInfo, aggregateValue)
-
+  
   val aggregates      = Aggregates(aggregateFields, List((bucket, aggregateValue)))
 
 

@@ -43,6 +43,7 @@ object OpsSpecUtils {
     (frontend, aggregateProcessor)
   }
 
+  // TODO move this somewhere
   def getTimeRangeContaining(timestamp: Timestamp): TimeRange = {
     val from  = timestamp.getBucket.toTimestamp
     val to    = timestamp.getBucket.addMinutes(1).toTimestamp

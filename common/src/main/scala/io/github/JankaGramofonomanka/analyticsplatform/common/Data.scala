@@ -248,6 +248,4 @@ object Data {
     }
   }
 
-  case class AggregateItem(info: AggregateInfo, value: AggregateValue)
-
 }
