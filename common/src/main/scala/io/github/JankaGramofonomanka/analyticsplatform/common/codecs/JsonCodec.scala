@@ -118,18 +118,18 @@ object JsonCodec {
     val includeSumPrice = aggregates.fields.sumPrice
     val includeCount    = aggregates.fields.count
 
-    Json.fromValues(aggregates.values.map(mkRow(fields, includeSumPrice, includeCount)))
+    Json.fromValues(aggregates.items.map(mkRow(fields, includeSumPrice, includeCount)))
   }
 
   private def mkRow(
     fields: Vector[Json],
     includeSumPrice: Boolean,
     includeCount: Boolean,
-  )(item: (Bucket, AggregateValue)): Json = {
+  )(item: AggregateItem): Json = {
 
-    val bucket    = Vector(item._1.asJson)
-    val sumPrice  = if (includeSumPrice)  Vector(item._2.sumPrice.asJson) else Vector()
-    val count     = if (includeCount)     Vector(item._2.count.asJson)    else Vector()
+    val bucket    = Vector(item.bucket.asJson)
+    val sumPrice  = if (includeSumPrice)  Vector(item.value.sumPrice.asJson) else Vector()
+    val count     = if (includeCount)     Vector(item.value.count.asJson)    else Vector()
     
     Json.fromValues(bucket ++ fields ++ sumPrice ++ count)
   }

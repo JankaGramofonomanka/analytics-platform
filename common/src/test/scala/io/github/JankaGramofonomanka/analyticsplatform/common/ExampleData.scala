@@ -54,7 +54,8 @@ object ExampleData {
 
   val aggregateKey    = AggregateKey(bucket, action, Some(origin), Some(brandId), Some(categoryId))
   
-  val aggregates      = Aggregates(aggregateFields, List((bucket, aggregateValue)))
+  val aggregateItem   = AggregateItem(bucket, aggregateValue)
+  val aggregates      = Aggregates(aggregateFields, List(aggregateItem))
   
 
 
@@ -118,9 +119,9 @@ object ExampleData {
     val aggregates = Aggregates(
       AggregateFields(BUY, true, true, None, Some(BrandId("Nike")), None),
       List(
-        (Bucket(LocalDateTime.parse("2022-03-01T00:05:00")), AggregateValue(3, Price(1000))),
-        (Bucket(LocalDateTime.parse("2022-03-01T00:06:00")), AggregateValue(4, Price(1500))),
-        (Bucket(LocalDateTime.parse("2022-03-01T00:07:00")), AggregateValue(2, Price(1200))),
+        AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:05:00")), AggregateValue(3, Price(1000))),
+        AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:06:00")), AggregateValue(4, Price(1500))),
+        AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:07:00")), AggregateValue(2, Price(1200))),
       )
     )
 

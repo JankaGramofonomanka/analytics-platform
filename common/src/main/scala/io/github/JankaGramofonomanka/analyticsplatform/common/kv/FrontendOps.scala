@@ -36,7 +36,11 @@ class FrontendOps[F[_]: Sync](
       val keys = buckets.map(bucket => AggregateKey.fromFields(bucket, fields))
       for {
         aggregateValues <- keys.traverse { key => aggregates.getAggregate(key) }
-        values = buckets.zip(aggregateValues)
+        
+        values = for {
+          (bucket, value) <- buckets.zip(aggregateValues)
+        } yield AggregateItem(bucket, value)
+
       } yield Aggregates(fields, values)
     }
 }

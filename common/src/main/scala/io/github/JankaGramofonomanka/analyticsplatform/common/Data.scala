@@ -205,7 +205,7 @@ object Data {
     def simplify: SimpleProfile = SimpleProfile(sortTags(views ++ buys))
   }
 
-  final case class Aggregates(fields: AggregateFields, values: List[(Bucket, AggregateValue)])
+  final case class Aggregates(fields: AggregateFields, items: List[AggregateItem])
   final case class AggregateFields(
     action: Action,
     count: Boolean,
@@ -214,6 +214,8 @@ object Data {
     brandId: Option[BrandId],
     categoryId: Option[CategoryId],
   )
+
+  final case class AggregateItem(bucket: Bucket, value: AggregateValue)
 
   final case class AggregateValue(count: Int, sumPrice: Price)
   object AggregateValue {

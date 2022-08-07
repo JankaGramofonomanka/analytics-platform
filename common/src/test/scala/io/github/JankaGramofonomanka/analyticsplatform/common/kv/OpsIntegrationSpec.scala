@@ -44,18 +44,18 @@ class OpsIntegrationSpec extends AnyFreeSpec {
     "tags are aggregated" - {
       
       "one tag" in {
-        val expected = (Case1.bucket, Case1.expectedAggregateValueRS)
-        assert(aggregatesRS.values.contains(expected))
+        val expected = AggregateItem(Case1.bucket, Case1.expectedAggregateValueRS)
+        assert(aggregatesRS.items.contains(expected))
       }
       
       "two tags" in {
-        val expected = (Case1.bucket, Case1.expectedAggregateValueWO)
-        assert(aggregatesWO.values.contains(expected))
+        val expected = AggregateItem(Case1.bucket, Case1.expectedAggregateValueWO)
+        assert(aggregatesWO.items.contains(expected))
       }
       
       "tags with differend field values" in {
-        val expected = (Case1.bucket, Case1.expectedAggregateValueAll)
-        assert(aggregatesAll.values.contains(expected))
+        val expected = AggregateItem(Case1.bucket, Case1.expectedAggregateValueAll)
+        assert(aggregatesAll.items.contains(expected))
       }
       
     }

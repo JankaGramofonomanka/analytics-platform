@@ -136,9 +136,9 @@ class FrontendOpsSpec extends AnyFreeSpec {
     
     val returned = frontend.getAggregates(timeRange, fields).unsafeRunSync()
     
-    val buckets = returned.values.map(_._1)
+    val buckets = returned.items.map(_.bucket)
 
-    "returns stored aggregates" in assert(returned.values.contains((key.bucket, value)))
+    "returns stored aggregates" in assert(returned.items.contains(AggregateItem(key.bucket, value)))
     "returns agggregates with correct fields" in assert(returned.fields == fields)
     "returns sorted aggregates" in {
       assert(Utils.isSortedWith((b1: Bucket, b2: Bucket) => !b1.value.isAfter(b2.value))(buckets))
