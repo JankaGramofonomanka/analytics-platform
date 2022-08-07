@@ -16,14 +16,14 @@ class AggregateProcessorOps[F[_]: Sync](
 ) {
 
   private def processTag(tag: UserTag): Stream[F, ExitCode] = Stream.eval {
-    val infos = AggregateInfo.fromTag(tag)
+    val keys = AggregateKey.fromTag(tag)
 
     for {
-      _ <- infos.traverse { info =>
+      _ <- keys.traverse { key =>
         for {
-          value <- aggregates.getAggregate(info)
+          value <- aggregates.getAggregate(key)
           newValue = AggregateValue(value.count + 1, value.sumPrice + tag.productInfo.price)
-          unit <- aggregates.updateAggregate(info, newValue)
+          unit <- aggregates.updateAggregate(key, newValue)
         } yield unit
       }
     } yield ExitCode.Success

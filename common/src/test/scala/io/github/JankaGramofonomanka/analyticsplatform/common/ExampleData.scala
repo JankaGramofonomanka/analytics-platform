@@ -52,9 +52,10 @@ object ExampleData {
   private val count = 1
   val aggregateValue  = AggregateValue(count, price)
 
-  val aggregateInfo   = AggregateInfo(bucket, action, Some(origin), Some(brandId), Some(categoryId))
+  val aggregateKey    = AggregateKey(bucket, action, Some(origin), Some(brandId), Some(categoryId))
   
   val aggregates      = Aggregates(aggregateFields, List((bucket, aggregateValue)))
+  
 
 
   // Json
@@ -122,6 +123,8 @@ object ExampleData {
         (Bucket(LocalDateTime.parse("2022-03-01T00:07:00")), AggregateValue(2, Price(1200))),
       )
     )
+
+    
 
   }
 

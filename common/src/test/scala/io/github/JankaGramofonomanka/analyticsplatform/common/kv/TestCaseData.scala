@@ -25,9 +25,9 @@ object TestCaseData {
     val bucket = tagRS.time.getBucket
     val action = tagRS.action
 
-    val infoAll = AggregateInfo(bucket, action, None, None, None)
-    val infoRS = infoAll.copy(brandId = Some(ExampleData.Brands.reardenSteel))
-    val infoWO = infoAll.copy(brandId = Some(ExampleData.Brands.wyattOil))
+    val keyAll = AggregateKey(bucket, action, None, None, None)
+    val keyRS = keyAll.copy(brandId = Some(ExampleData.Brands.reardenSteel))
+    val keyWO = keyAll.copy(brandId = Some(ExampleData.Brands.wyattOil))
 
     val fieldsAll = AggregateFields(action, true, true, None, None, None)
     val fieldsRS  = fieldsAll.copy(brandId = Some(Case1.brandRS))

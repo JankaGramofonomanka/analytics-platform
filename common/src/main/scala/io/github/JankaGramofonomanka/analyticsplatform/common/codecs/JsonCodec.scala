@@ -135,8 +135,8 @@ object JsonCodec {
   }
 
   // TODO consider more efficiend encoding ex. concatenate strings
-  implicit val aggregateInfoEncoder: Encoder[AggregateInfo] = deriveConfiguredEncoder[AggregateInfo]
-  implicit val aggregateInfoDecoder: Decoder[AggregateInfo] = deriveConfiguredDecoder[AggregateInfo]
+  implicit val aggregateKeyEncoder: Encoder[AggregateKey] = deriveConfiguredEncoder[AggregateKey]
+  implicit val aggregateKeyDecoder: Decoder[AggregateKey] = deriveConfiguredDecoder[AggregateKey]
 
   implicit val aggregateValueEncoder: Encoder[AggregateValue] = deriveConfiguredEncoder[AggregateValue]
   implicit val aggregateValueDecoder: Decoder[AggregateValue] = deriveConfiguredDecoder[AggregateValue]

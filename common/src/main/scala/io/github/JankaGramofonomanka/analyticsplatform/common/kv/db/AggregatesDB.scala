@@ -4,8 +4,8 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 
 trait AggregatesDB[F[_]] {
 
-  def getAggregate(info: AggregateInfo): F[AggregateValue]
-  def updateAggregate(info: AggregateInfo, value: AggregateValue): F[Unit]
+  def getAggregate(key: AggregateKey): F[AggregateValue]
+  def updateAggregate(key: AggregateKey, value: AggregateValue): F[Unit]
 
 }
 

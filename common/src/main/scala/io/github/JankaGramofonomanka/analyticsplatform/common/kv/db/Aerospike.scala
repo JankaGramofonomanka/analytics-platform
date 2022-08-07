@@ -52,14 +52,14 @@ object Aerospike {
     def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit]
       = putBin(cookie.value, codec.encodeProfile(profile))
 
-    def getAggregate(info: AggregateInfo): IO[AggregateValue] = for {
-      record <- getRecord(codec.encodeAggregateInfo(info))
+    def getAggregate(key: AggregateKey): IO[AggregateValue] = for {
+      record <- getRecord(codec.encodeAggregateKey(key))
       value = record.flatMap(r => codec.decodeAggregateValue(r))
 
     } yield value.getOrElse(AggregateValue.default)
 
-    def updateAggregate(info: AggregateInfo, value: AggregateValue): IO[Unit]
-      = putBin(codec.encodeAggregateInfo(info), codec.encodeAggregateValue(value))
+    def updateAggregate(key: AggregateKey, value: AggregateValue): IO[Unit]
+      = putBin(codec.encodeAggregateKey(key), codec.encodeAggregateValue(value))
 
   }
   

@@ -33,9 +33,9 @@ class FrontendOps[F[_]: Sync](
   ): F[Aggregates] = {
     
       val buckets = timeRange.getBuckets
-      val infos = buckets.map(bucket => AggregateInfo.fromFields(bucket, fields))
+      val keys = buckets.map(bucket => AggregateKey.fromFields(bucket, fields))
       for {
-        aggregateValues <- infos.traverse { info => aggregates.getAggregate(info) }
+        aggregateValues <- keys.traverse { key => aggregates.getAggregate(key) }
         values = buckets.zip(aggregateValues)
       } yield Aggregates(fields, values)
     }

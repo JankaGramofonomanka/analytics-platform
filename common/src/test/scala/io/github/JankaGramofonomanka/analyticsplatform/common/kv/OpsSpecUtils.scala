@@ -16,7 +16,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.{Mock => 
 object OpsSpecUtils {
   final case class Storage(
     profiles:   Map[Cookie, SimpleProfile],
-    aggregates: Map[AggregateInfo, AggregateValue],
+    aggregates: Map[AggregateKey, AggregateValue],
     queue:      Queue[UserTag],
   )
 

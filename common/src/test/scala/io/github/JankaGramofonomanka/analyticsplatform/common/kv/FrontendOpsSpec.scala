@@ -124,21 +124,21 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
     val (frontend, _) = getOps[IO](interface)
 
-    val fields = ExampleData.aggregateFields
-    val info = AggregateInfo.fromFields(ExampleData.bucket, fields)
-    val value = ExampleData.aggregateValue
+    val fields  = ExampleData.aggregateFields
+    val key     = AggregateKey.fromFields(ExampleData.bucket, fields)
+    val value   = ExampleData.aggregateValue
 
-    storage.aggregates.put(info, value)
+    storage.aggregates.put(key, value)
 
-    val from  = info.bucket.addMinutes(-1).toTimestamp
-    val to    = info.bucket.addMinutes(2) .toTimestamp
+    val from      = key.bucket.addMinutes(-1).toTimestamp
+    val to        = key.bucket.addMinutes(2) .toTimestamp
     val timeRange = TimeRange(from, to)
     
     val returned = frontend.getAggregates(timeRange, fields).unsafeRunSync()
     
     val buckets = returned.values.map(_._1)
 
-    "returns stored aggregates" in assert(returned.values.contains((info.bucket, value)))
+    "returns stored aggregates" in assert(returned.values.contains((key.bucket, value)))
     "returns agggregates with correct fields" in assert(returned.fields == fields)
     "returns sorted aggregates" in {
       assert(Utils.isSortedWith((b1: Bucket, b2: Bucket) => !b1.value.isAfter(b2.value))(buckets))

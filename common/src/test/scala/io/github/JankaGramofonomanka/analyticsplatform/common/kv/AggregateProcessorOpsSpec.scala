@@ -5,8 +5,6 @@ import org.scalatest.freespec.AnyFreeSpec
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 
-import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.OpsSpecUtils._
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.TestCaseData._
 
@@ -27,23 +25,18 @@ class AggregateProcessorOpsSpec extends AnyFreeSpec {
     proc.processTags.take(3).compile.drain.unsafeRunSync()
 
 
-    val infoAll = AggregateInfo(Case1.bucket, Case1.action, None, None, None)
-    val infoRS = infoAll.copy(brandId = Some(ExampleData.Brands.reardenSteel))
-    val infoWO = infoAll.copy(brandId = Some(ExampleData.Brands.wyattOil))
-    
-    
     "correctly processes one tag" in {
-      val result = storage.aggregates.get(infoRS)
+      val result = storage.aggregates.get(Case1.keyRS)
       assert(result == Some(Case1.expectedAggregateValueRS))
     }
     
     "correctly processes two tags" in {
-      val result = storage.aggregates.get(infoWO)
+      val result = storage.aggregates.get(Case1.keyWO)
       assert(result == Some(Case1.expectedAggregateValueWO))
     }
     
     "correctly processes tags with differend field values" in {
-      val result = storage.aggregates.get(infoAll)
+      val result = storage.aggregates.get(Case1.keyAll)
       assert(result == Some(Case1.expectedAggregateValueAll))
     }  
   }

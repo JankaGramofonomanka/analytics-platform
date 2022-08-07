@@ -221,7 +221,7 @@ object Data {
   }
 
 
-  case class AggregateInfo(
+  final case class AggregateKey(
     bucket:     Bucket,
     action:     Action,
     origin:     Option[Origin],
@@ -229,24 +229,26 @@ object Data {
     categoryId: Option[CategoryId],
   )
   
-  object AggregateInfo {
+  object AggregateKey {
     private def someAndNone[A](a: A): List[Option[A]] = List(Some(a), None)
 
-    /*  Returns list of aggregate infos such that their corresponding aggregate 
+    /*  Returns list of aggregate keys such that their corresponding aggregate 
         values must be updated when `tag` is added to the database
     */
-    def fromTag(tag: UserTag): List[AggregateInfo] = {
+    def fromTag(tag: UserTag): List[AggregateKey] = {
       val bucket = tag.time.getBucket
       
       for {
         optOrigin     <- someAndNone(tag.origin)
         optBrandId    <- someAndNone(tag.productInfo.brandId)
         optCategoryId <- someAndNone(tag.productInfo.categoryId)
-      } yield AggregateInfo(bucket, tag.action, optOrigin, optBrandId, optCategoryId)
+      } yield AggregateKey(bucket, tag.action, optOrigin, optBrandId, optCategoryId)
     }
 
-    def fromFields(bucket: Bucket, fields: AggregateFields): AggregateInfo
-      = AggregateInfo(bucket, fields.action, fields.origin, fields.brandId, fields.categoryId)
+    def fromFields(bucket: Bucket, fields: AggregateFields): AggregateKey
+      = AggregateKey(bucket, fields.action, fields.origin, fields.brandId, fields.categoryId)
   }
+
+  
 
 }

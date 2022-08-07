@@ -40,7 +40,7 @@ class AerospikeCodec(profileBinName: String, aggregateBinName: String) {
     new Bin(profileBinName, value)
   }
 
-  def encodeAggregateInfo(info: AggregateInfo): String = info.asJson.noSpaces.toString
+  def encodeAggregateKey(key: AggregateKey): String = key.asJson.noSpaces.toString
 
   def encodeAggregateValue(aggregateValue: AggregateValue): Bin = {
     val value: Array[Byte] = aggregateValue.asJson.noSpaces.toString.getBytes

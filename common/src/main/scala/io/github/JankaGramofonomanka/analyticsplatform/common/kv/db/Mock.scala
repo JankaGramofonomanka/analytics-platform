@@ -13,7 +13,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 
 class Mock[F[_]: Monad](
   profiles:   Map[Cookie, SimpleProfile],
-  aggregates: Map[AggregateInfo, AggregateValue],
+  aggregates: Map[AggregateKey, AggregateValue],
 ) extends ProfilesDB[F] with AggregatesDB[F] {
 
   private def pure[A](x: A): F[A] = Utils.pure[F, A](x)
@@ -25,27 +25,27 @@ class Mock[F[_]: Monad](
   def updateProfile(cookie: Cookie, profile: SimpleProfile): F[Unit]
     = pure(profiles.addOne((cookie, profile)))
 
-  def getAggregate(info: AggregateInfo): F[AggregateValue]
-    = pure(aggregates.get(info).getOrElse(AggregateValue.default))
+  def getAggregate(key: AggregateKey): F[AggregateValue]
+    = pure(aggregates.get(key).getOrElse(AggregateValue.default))
   
-  def updateAggregate(info: AggregateInfo, value: AggregateValue): F[Unit]
-    = pure(aggregates.put(info, value)) >> pure(())
+  def updateAggregate(key: AggregateKey, value: AggregateValue): F[Unit]
+    = pure(aggregates.put(key, value)) >> pure(())
 
 
 
   object Aggregator extends Topic.Publisher[F, UserTag] {
 
-    private def getAggregate(info: AggregateInfo): F[AggregateValue]
-      = pure(aggregates.get(info).getOrElse(AggregateValue.default))
+    private def getAggregate(key: AggregateKey): F[AggregateValue]
+      = pure(aggregates.get(key).getOrElse(AggregateValue.default))
     
-    private def getAggregateKV(info: AggregateInfo): F[(AggregateInfo, AggregateValue)] = for {
-      v <- getAggregate(info)
-    } yield (info -> v)
+    private def getAggregateKV(key: AggregateKey): F[(AggregateKey, AggregateValue)] = for {
+      v <- getAggregate(key)
+    } yield (key -> v)
 
     def publish(tag: UserTag): F[Unit] = {
-      val aggregateInfos = AggregateInfo.fromTag(tag)
+      val keys = AggregateKey.fromTag(tag)
       for {
-        toUpdate <- aggregateInfos.traverse(info => getAggregateKV(info))
+        toUpdate <- keys.traverse(key => getAggregateKV(key))
         toAdd = toUpdate.map { case (k, v)
           => (k -> AggregateValue(v.count + 1, v.sumPrice + tag.productInfo.price))
         }
