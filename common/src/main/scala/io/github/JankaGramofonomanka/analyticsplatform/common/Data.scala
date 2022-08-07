@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit
 import cats.syntax.either._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
-import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 
 object Data {
   final case class Cookie(value: String) extends AnyVal
@@ -178,10 +177,9 @@ object Data {
 
   final case class SimpleProfile(tags: Vector[UserTag]) extends AnyVal {
 
-    // TODO make `Config.Other.numTagsToKeep` a parameter
-    def update(tag: UserTag): SimpleProfile = {
+    def update(tag: UserTag, tagsToKeep: Int): SimpleProfile = {
       
-      val newTags = insertTagInOrder(tags, tag).take(Config.Other.numTagsToKeep)
+      val newTags = insertTagInOrder(tags, tag).take(tagsToKeep)
       SimpleProfile(newTags)
     }
 

@@ -4,6 +4,7 @@ import cats.effect.Sync
 import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 
@@ -16,7 +17,7 @@ class FrontendOps[F[_]: Sync](
   def storeTag(tag: UserTag): F[Unit] = for {
 
     profile <- profiles.getProfile(tag.cookie)
-    updatedProfile = profile.update(tag)
+    updatedProfile = profile.update(tag, Config.Other.numTagsToKeep)
     _ <- profiles.updateProfile(tag.cookie, updatedProfile)
     _ <- tagsToAggregate.publish(tag)
   } yield ()

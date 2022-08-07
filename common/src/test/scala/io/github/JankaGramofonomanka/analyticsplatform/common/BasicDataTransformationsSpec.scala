@@ -74,12 +74,14 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     }
   }
   "`SimpleProfile.update`" - {
-    val range = Range.Long(0, Config.Other.numTagsToKeep.toLong, 1)
+
+    val tagsToKeep = 5
+    val range = Range.Long(0, tagsToKeep.toLong, 1)
     val timestamps = range.map(n => ExampleData.bucket.addMinutes(-n).toTimestamp)
     val tags = timestamps.map(ts => ExampleData.userTag.copy(time = ts)).toVector
     
     val profile = SimpleProfile(tags)
-    val updated = profile.update(ExampleData.userTag)
+    val updated = profile.update(ExampleData.userTag, tagsToKeep)
 
     "added tag is remains in the profile" in assert(updated.tags.contains(ExampleData.userTag))
     "limited number of tags is kept"      in assert(updated.tags.length <= Config.Other.numTagsToKeep)
@@ -89,7 +91,7 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
 
       val past = ExampleData.bucket.addMinutes(-3).toTimestamp
       val notFresh = ExampleData.userTag.copy(time = past)
-      assert(sorted(profile.update(notFresh).tags))
+      assert(sorted(profile.update(notFresh, tagsToKeep).tags))
     }
   }
   "PrettyProfile.simplify, SimpleProfile.prettify" - {
