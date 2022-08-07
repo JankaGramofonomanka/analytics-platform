@@ -44,8 +44,8 @@ object ExampleData {
   val userTagV  = UserTag(timestamp, cookie, country, device, VIEW,   origin, productInfo)
   val userTagB  = UserTag(timestamp, cookie, country, device, BUY,    origin, productInfo)
   
-  val simpleProfile = SimpleProfile(Array(userTagV, userTagB))
-  val prettyProfile = PrettyProfile(cookie, Array(userTagV), Array(userTagB))
+  val simpleProfile = SimpleProfile(Vector(userTagV, userTagB))
+  val prettyProfile = PrettyProfile(cookie, Vector(userTagV), Vector(userTagB))
 
   val aggregateFields = AggregateFields(action, true, true, Some(origin), Some(brandId), Some(categoryId))
 
@@ -55,7 +55,7 @@ object ExampleData {
   val aggregateKey    = AggregateKey(bucket, action, Some(origin), Some(brandId), Some(categoryId))
   
   val aggregateItem   = AggregateItem(bucket, aggregateValue)
-  val aggregates      = Aggregates(aggregateFields, List(aggregateItem))
+  val aggregates      = Aggregates(aggregateFields, Vector(aggregateItem))
   
 
 
@@ -118,7 +118,7 @@ object ExampleData {
 
     val aggregates = Aggregates(
       AggregateFields(BUY, true, true, None, Some(BrandId("Nike")), None),
-      List(
+      Vector(
         AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:05:00")), AggregateValue(3, Price(1000))),
         AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:06:00")), AggregateValue(4, Price(1500))),
         AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:07:00")), AggregateValue(2, Price(1200))),

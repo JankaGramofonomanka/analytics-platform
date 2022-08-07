@@ -56,7 +56,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     "returns the stored profile" in {
     
       val tag = ExampleData.userTag
-      val profile = SimpleProfile(Array(tag))
+      val profile = SimpleProfile(Vector(tag))
       storage.profiles.put(tag.cookie, profile)
 
       val timeRange = getTimeRangeContaining(tag.time)
@@ -81,7 +81,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
       val timeRange = TimeRange(plus0, plus2)
 
-      val profile = SimpleProfile(Array(included, excluded))
+      val profile = SimpleProfile(Vector(included, excluded))
       storage.profiles.put(cookie, profile)
 
       val limit     = Config.Other.numTagsToKeep
@@ -106,7 +106,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
       val timeRange = TimeRange(plus0, plus3)
 
-      val profile = SimpleProfile(Array(included, excluded))
+      val profile = SimpleProfile(Vector(included, excluded))
       storage.profiles.put(cookie, profile)
 
       val returned = frontend.getProfile(cookie, timeRange, 1).unsafeRunSync()

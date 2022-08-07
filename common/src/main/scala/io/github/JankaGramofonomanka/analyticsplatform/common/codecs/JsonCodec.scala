@@ -1,7 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 
 import io.circe._
-import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe.generic.extras._
 import io.circe.generic.extras.semiauto._

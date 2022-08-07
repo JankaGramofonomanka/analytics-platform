@@ -75,8 +75,8 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
   }
   "`SimpleProfile.update`" - {
     val range = Range.Long(0, Config.Other.numTagsToKeep.toLong, 1)
-    val timestamps = range.map(n => ExampleData.bucket.addMinutes(n).toTimestamp)
-    val tags = timestamps.map(ts => ExampleData.userTag.copy(time = ts)).toArray
+    val timestamps = range.map(n => ExampleData.bucket.addMinutes(-n).toTimestamp)
+    val tags = timestamps.map(ts => ExampleData.userTag.copy(time = ts)).toVector
     
     val profile = SimpleProfile(tags)
     val updated = profile.update(ExampleData.userTag)
@@ -85,7 +85,11 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     "limited number of tags is kept"      in assert(updated.tags.length <= Config.Other.numTagsToKeep)
     "tags are sorted after update"        in {
       val sorted: Seq[UserTag] => Boolean = Utils.isSortedWith((tag1, tag2) => !tag1.time.value.isBefore(tag2.time.value))
-      assert(sorted(updated.tags.toSeq))
+      assert(sorted(updated.tags))
+
+      val past = ExampleData.bucket.addMinutes(-3).toTimestamp
+      val notFresh = ExampleData.userTag.copy(time = past)
+      assert(sorted(profile.update(notFresh).tags))
     }
   }
   "PrettyProfile.simplify, SimpleProfile.prettify" - {

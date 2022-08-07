@@ -53,15 +53,15 @@ object Data {
     def contains(datetime: Timestamp): Boolean
       = (!from.value.isAfter(datetime.value)) && datetime.value.isBefore(to.value)
 
-    // TODO change `List` to something else (`Stream`?)
-    def getBuckets: List[Bucket] = {
+    // TODO is `Vector` ok?
+    def getBuckets: Vector[Bucket] = {
 
       val numBuckets = ChronoUnit.MINUTES.between(from.value, to.value)
 
       val first = from.getBucket
 
       val range = Range.Long(0, numBuckets, 1)
-      range.map(n => first.addMinutes(n)).toList
+      range.map(n => first.addMinutes(n)).toVector
     }
   }
 
@@ -176,17 +176,12 @@ object Data {
     price:      Price,
   )
 
-  // TODO figure out efficient sorting
-  private def sortTags(tags: Array[UserTag]): Array[UserTag]
-    = tags.sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
-
-  // TODO replace `Array` with sometyhing else so that comparing idenctical profiles returns `true`
-  final case class SimpleProfile(tags: Array[UserTag]) extends AnyVal {
+  final case class SimpleProfile(tags: Vector[UserTag]) extends AnyVal {
 
     // TODO make `Config.Other.numTagsToKeep` a parameter
     def update(tag: UserTag): SimpleProfile = {
       
-      val newTags = sortTags(Array(tag) ++ tags).take(Config.Other.numTagsToKeep)
+      val newTags = insertTagInOrder(tags, tag).take(Config.Other.numTagsToKeep)
       SimpleProfile(newTags)
     }
 
@@ -194,18 +189,25 @@ object Data {
       val (views, buys) = tags.partition(_.action == VIEW)
       PrettyProfile(cookie, views, buys)
     }
+
+    private def insertTagInOrder(tags: Vector[UserTag], tag: UserTag): Vector[UserTag] = {
+      val (prefix, postfix) = tags.span(_.time.value.isAfter(tag.time.value))
+      prefix ++ Vector(tag) ++ postfix
+    }
   }
 
   object SimpleProfile {
-    val default: SimpleProfile = SimpleProfile(Array())
+    val default: SimpleProfile = SimpleProfile(Vector())
   }
 
-  // TODO replace `Array` with sometyhing else so that comparing idenctical profiles returns `true`
-  final case class PrettyProfile(cookie: Cookie, views: Array[UserTag], buys: Array[UserTag]) {
+  final case class PrettyProfile(cookie: Cookie, views: Vector[UserTag], buys: Vector[UserTag]) {
     def simplify: SimpleProfile = SimpleProfile(sortTags(views ++ buys))
+
+    private def sortTags(tags: Vector[UserTag]): Vector[UserTag]
+      = tags.sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
   }
 
-  final case class Aggregates(fields: AggregateFields, items: List[AggregateItem])
+  final case class Aggregates(fields: AggregateFields, items: Vector[AggregateItem])
   final case class AggregateFields(
     action: Action,
     count: Boolean,
