@@ -10,12 +10,12 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
   "`Timestamp.getBucket`" - {
     "buckets are rounded up to 1 minute" in {
       val bucket = ExampleData.timestamp.getBucket
-      assert(bucket.value.getSecond == 0)
-      assert(bucket.value.getNano == 0)
+      assert(bucket.toDateTime.getSecond == 0)
+      assert(bucket.toDateTime.getNano == 0)
     }
     "bucket is not after timestamp" in {
       val bucket = ExampleData.timestamp.getBucket
-      assert(!bucket.value.isAfter(ExampleData.timestamp.value))
+      assert(!bucket.toTimestamp.isAfter(ExampleData.timestamp))
     }
     "in composition with `Bucket.toTimestamp`" in {
       val timestamp = ExampleData.bucket.toTimestamp
@@ -29,11 +29,11 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     val now     = bucket.addMinutes(0)
     val after   = bucket.addMinutes(1)
 
-    assert(now    .value.isEqual  (bucket .value))
+    assert(now    .isEqual(bucket))
 
-    assert(before .value.isBefore (now    .value))
-    assert(now    .value.isBefore (after  .value))
-    assert(before .value.isBefore (after  .value))
+    assert(before .isBefore(now))
+    assert(now    .isBefore(after))
+    assert(before .isBefore(after))
     
   }
   "`TimeRange.contains`" in {
@@ -86,7 +86,7 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     "added tag is remains in the profile" in assert(updated.tags.contains(ExampleData.userTag))
     "limited number of tags is kept"      in assert(updated.tags.length <= Config.Other.numTagsToKeep)
     "tags are sorted after update"        in {
-      val sorted: Seq[UserTag] => Boolean = Utils.isSortedWith((tag1, tag2) => !tag1.time.value.isBefore(tag2.time.value))
+      val sorted: Seq[UserTag] => Boolean = Utils.isSortedWith((tag1, tag2) => !tag1.time.isBefore(tag2.time))
       assert(sorted(updated.tags))
 
       val past = ExampleData.bucket.addMinutes(-3).toTimestamp

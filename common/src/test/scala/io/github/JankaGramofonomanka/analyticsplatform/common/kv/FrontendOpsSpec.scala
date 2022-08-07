@@ -141,7 +141,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     "returns stored aggregates" in assert(returned.items.contains(AggregateItem(key.bucket, value)))
     "returns agggregates with correct fields" in assert(returned.fields == fields)
     "returns sorted aggregates" in {
-      assert(Utils.isSortedWith((b1: Bucket, b2: Bucket) => !b1.value.isAfter(b2.value))(buckets))
+      assert(Utils.isSortedWith((b1: Bucket, b2: Bucket) => !b1.isAfter(b2))(buckets))
     }
     "returns aggregates in the given time range" in {
       assert(buckets.head == from.getBucket)

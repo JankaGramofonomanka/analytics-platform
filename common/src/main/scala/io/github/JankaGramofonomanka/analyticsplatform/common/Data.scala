@@ -11,17 +11,23 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
 object Data {
   final case class Cookie(value: String) extends AnyVal
 
+  private def roundToMinutes(dt: LocalDateTime): LocalDateTime = {
+    val year    = dt.getYear
+    val month   = dt.getMonthValue
+    val day     = dt.getDayOfMonth
+    val hour    = dt.getHour
+    val minute  = dt.getMinute
+
+    LocalDateTime.of(year, month, day, hour, minute)
+  }
+
   final case class Timestamp(value: LocalDateTime) extends AnyVal {
-    def getBucket: Bucket = {
+    def getBucket: Bucket = Bucket(roundToMinutes(value))
 
-      val year    = value.getYear
-      val month   = value.getMonthValue
-      val day     = value.getDayOfMonth
-      val hour    = value.getHour
-      val minute  = value.getMinute
+    def isAfter (ts: Timestamp): Boolean = value.isAfter  (ts.value)
+    def isBefore(ts: Timestamp): Boolean = value.isBefore (ts.value)
+    def isEqual (ts: Timestamp): Boolean = value.isEqual  (ts.value)
 
-      Bucket(LocalDateTime.of(year, month, day, hour, minute))
-    }
   }
   object Timestamp {
     def parse(s: String): Either[String, Timestamp]
@@ -33,13 +39,20 @@ object Data {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
   }
 
-  // TODO shouldn't `value` be private?
-  final case class Bucket(value: LocalDateTime) extends AnyVal {
+  // TODO how to enforce rounding of `value` on bucket creation?
+  final case class Bucket(private val value: LocalDateTime) extends AnyVal {
     def addMinutes(n: Long): Bucket = Bucket(value.plus(n, ChronoUnit.MINUTES))
+    
     def toTimestamp: Timestamp = Timestamp(value)
+    def toDateTime: LocalDateTime = value
+
+    def isAfter (bucket: Bucket): Boolean = value.isAfter (bucket.value)
+    def isBefore(bucket: Bucket): Boolean = value.isBefore(bucket.value)
+    def isEqual (bucket: Bucket): Boolean = value.isEqual (bucket.value)
   }
 
   object Bucket {
+    
     def parse(s: String): Either[String, Bucket]
       = Timestamp.parse(s).map(_.getBucket)
 
@@ -49,8 +62,8 @@ object Data {
   }
 
   final case class TimeRange(from: Timestamp, to: Timestamp) {
-    def contains(datetime: Timestamp): Boolean
-      = (!from.value.isAfter(datetime.value)) && datetime.value.isBefore(to.value)
+    def contains(ts: Timestamp): Boolean
+      = (!from.isAfter(ts)) && ts.isBefore(to)
 
     // TODO is `Vector` ok?
     def getBuckets: Vector[Bucket] = {
@@ -189,7 +202,7 @@ object Data {
     }
 
     private def insertTagInOrder(tags: Vector[UserTag], tag: UserTag): Vector[UserTag] = {
-      val (prefix, postfix) = tags.span(_.time.value.isAfter(tag.time.value))
+      val (prefix, postfix) = tags.span(_.time.isAfter(tag.time))
       prefix ++ Vector(tag) ++ postfix
     }
   }
@@ -202,7 +215,7 @@ object Data {
     def simplify: SimpleProfile = SimpleProfile(sortTags(views ++ buys))
 
     private def sortTags(tags: Vector[UserTag]): Vector[UserTag]
-      = tags.sortWith((t1, t2) => t1.time.value.isAfter(t2.time.value))
+      = tags.sortWith((t1, t2) => t1.time.isAfter(t2.time))
   }
 
   final case class Aggregates(fields: AggregateFields, items: Vector[AggregateItem])
