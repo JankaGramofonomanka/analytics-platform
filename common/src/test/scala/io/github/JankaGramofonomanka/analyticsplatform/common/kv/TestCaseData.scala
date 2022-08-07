@@ -29,6 +29,11 @@ object TestCaseData {
     val infoRS = infoAll.copy(brandId = Some(ExampleData.Brands.reardenSteel))
     val infoWO = infoAll.copy(brandId = Some(ExampleData.Brands.wyattOil))
 
+    val fieldsAll = AggregateFields(action, true, true, None, None, None)
+    val fieldsRS  = fieldsAll.copy(brandId = Some(Case1.brandRS))
+    val fieldsWO  = fieldsAll.copy(brandId = Some(Case1.brandWO))
+    
+
     val timeRange = getTimeRangeContaining(bucket.toTimestamp)
 
     val expectedAggregateValueAll = AggregateValue(3, priceRS + priceWO1 + priceWO2)

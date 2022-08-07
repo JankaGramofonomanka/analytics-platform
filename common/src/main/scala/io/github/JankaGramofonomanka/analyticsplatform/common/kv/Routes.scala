@@ -46,15 +46,15 @@ object Routes {
           case Valid(aggregates) => {
             val count     = if (aggregates.contains(COUNT))     true else false
             val sumPrice  = if (aggregates.contains(SUM_PRICE)) true else false
-            ops.getAggregates(
-              timeRange,
+            val fields = AggregateFields(
               action,
               count,
               sumPrice,
               origin,
               brandId,
               categoryId,
-            ) flatMap (x => Ok(x))
+            )
+            ops.getAggregates(timeRange, fields) flatMap (x => Ok(x))
           }
 
           case Invalid(_) => BadRequest(failedToDecodeParameterS(QueryParams.aggregates))

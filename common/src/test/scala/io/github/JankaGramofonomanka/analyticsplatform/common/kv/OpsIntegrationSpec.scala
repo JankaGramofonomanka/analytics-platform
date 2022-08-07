@@ -25,9 +25,9 @@ class OpsIntegrationSpec extends AnyFreeSpec {
 
       _ <- proc.processTags.take(3).compile.drain
 
-      aggregatesRS  <- frontend.getAggregates(Case1.timeRange, Case1.action, true, true, None, Some(Case1.brandRS), None)
-      aggregatesWO  <- frontend.getAggregates(Case1.timeRange, Case1.action, true, true, None, Some(Case1.brandWO), None)
-      aggregatesAll <- frontend.getAggregates(Case1.timeRange, Case1.action, true, true, None, None,                None)
+      aggregatesRS  <- frontend.getAggregates(Case1.timeRange, Case1.fieldsRS)
+      aggregatesWO  <- frontend.getAggregates(Case1.timeRange, Case1.fieldsWO)
+      aggregatesAll <- frontend.getAggregates(Case1.timeRange, Case1.fieldsAll)
       profile       <- frontend.getProfile(Case1.cookie, Case1.timeRange, 3)
       
     } yield (profile, aggregatesRS, aggregatesWO, aggregatesAll)

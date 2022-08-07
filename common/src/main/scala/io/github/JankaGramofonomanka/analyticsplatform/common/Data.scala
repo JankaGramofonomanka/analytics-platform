@@ -244,6 +244,9 @@ object Data {
         optCategoryId <- someAndNone(tag.productInfo.categoryId)
       } yield AggregateInfo(bucket, tag.action, optOrigin, optBrandId, optCategoryId)
     }
+
+    def fromFields(bucket: Bucket, fields: AggregateFields): AggregateInfo
+      = AggregateInfo(bucket, fields.action, fields.origin, fields.brandId, fields.categoryId)
   }
 
 }

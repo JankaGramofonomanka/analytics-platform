@@ -29,22 +29,14 @@ class FrontendOps[F[_]: Sync](
 
   def getAggregates(
       timeRange:  TimeRange,
-      action:     Action,
-      count:      Boolean,
-      sumPrice:   Boolean,
-      origin:     Option[Origin],
-      brandId:    Option[BrandId],
-      categoryId: Option[CategoryId],
+      fields:     AggregateFields,
   ): F[Aggregates] = {
     
       val buckets = timeRange.getBuckets
-      val infos = buckets.map(bucket => AggregateInfo(bucket, action, origin, brandId, categoryId))
-      val fields = AggregateFields(action, count, sumPrice, origin, brandId, categoryId)
+      val infos = buckets.map(bucket => AggregateInfo.fromFields(bucket, fields))
       for {
-        
         aggregateValues <- infos.traverse { info => aggregates.getAggregate(info) }
         values = buckets.zip(aggregateValues)
-        
       } yield Aggregates(fields, values)
     }
 }

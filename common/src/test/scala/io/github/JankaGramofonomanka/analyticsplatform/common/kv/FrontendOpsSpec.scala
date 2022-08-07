@@ -125,13 +125,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     val (frontend, _) = getOps[IO](interface)
 
     val fields = ExampleData.aggregateFields
-    val info = AggregateInfo(
-      ExampleData.bucket,
-      fields.action,
-      fields.origin,
-      fields.brandId,
-      fields.categoryId,
-    )
+    val info = AggregateInfo.fromFields(ExampleData.bucket, fields)
     val value = ExampleData.aggregateValue
 
     storage.aggregates.put(info, value)
@@ -140,15 +134,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     val to    = info.bucket.addMinutes(2) .toTimestamp
     val timeRange = TimeRange(from, to)
     
-    val returned = frontend.getAggregates(
-        timeRange,
-        fields.action,
-        fields.count,
-        fields.sumPrice,
-        fields.origin,
-        fields.brandId,
-        fields.categoryId,
-      ).unsafeRunSync()
+    val returned = frontend.getAggregates(timeRange, fields).unsafeRunSync()
     
     val buckets = returned.values.map(_._1)
 
