@@ -58,10 +58,8 @@ object Data {
 
       val numBuckets = ChronoUnit.MINUTES.between(from.value, to.value)
 
-      // TODO round down or up?
       val first = from.getBucket
 
-      // TODO range inclusive or exclusive?
       val range = Range.Long(0, numBuckets, 1)
       range.map(n => first.addMinutes(n)).toList
     }
