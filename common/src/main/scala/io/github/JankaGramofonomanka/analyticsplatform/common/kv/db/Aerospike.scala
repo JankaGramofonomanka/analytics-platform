@@ -1,5 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common.kv.db
 
+import cats.data.OptionT
 import cats.effect.IO
 
 
@@ -7,7 +8,7 @@ import com.aerospike.client.{AerospikeClient, Key, Record, Bin}
 import com.aerospike.client.policy.{Policy, WritePolicy}
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.Utils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCodec
 
@@ -28,7 +29,7 @@ object Aerospike {
 
   class DB(client: AerospikeClient, config: Config) extends ProfilesDB[IO] with AggregatesDB[IO] {
 
-    private val codec = new AerospikeCodec(config.profileBinName, config.aggregateBinName)
+    private val codec = AerospikeCodec
 
     private def mkKey(key: String): Key = new Key(config.namespace, config.profilesSetName, key)
 
@@ -36,8 +37,15 @@ object Aerospike {
       val key = mkKey(keyS)
       for {
         record <- IO.delay(client.get(config.readPolicy, key))
-      } yield checkForNull(record)
+      } yield Utils.checkForNull(record)
     }
+
+    private def getBytes(key: String, binName: String): IO[Option[Array[Byte]]] = {
+      for {
+        record <- OptionT(getRecord(key))
+        obj <- OptionT.fromOption[IO](Utils.checkForNull(record.bins.get(binName)))
+      } yield obj.asInstanceOf[Array[Byte]]
+    }.value
 
     private def putBin(keyS: String, bin: Bin): IO[Unit] = {
       val key = mkKey(keyS)
@@ -45,21 +53,25 @@ object Aerospike {
     }
 
     def getProfile(cookie: Cookie): IO[SimpleProfile] = for {
-      record <- getRecord(cookie.value)
-      profile <- IO.delay(record.flatMap(r => codec.decodeProfile(r)))
+      bytes <- getBytes(cookie.value, config.profileBinName)
+      profile <- IO.delay(bytes.flatMap(r => codec.decodeProfile(r)))
     } yield profile.getOrElse(SimpleProfile.default)
 
-    def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit]
-      = putBin(cookie.value, codec.encodeProfile(profile))
+    def updateProfile(cookie: Cookie, profile: SimpleProfile): IO[Unit] = {
+      val bin = new Bin(config.profileBinName, codec.encodeProfile(profile))
+      putBin(cookie.value, bin)
+    }
 
     def getAggregate(key: AggregateKey): IO[AggregateValue] = for {
-      record <- getRecord(codec.encodeAggregateKey(key))
-      value = record.flatMap(r => codec.decodeAggregateValue(r))
+      bytes <- getBytes(codec.encodeAggregateKey(key), config.aggregateBinName)
+      value = bytes.flatMap(r => codec.decodeAggregateValue(r))
 
     } yield value.getOrElse(AggregateValue.default)
 
-    def updateAggregate(key: AggregateKey, value: AggregateValue): IO[Unit]
-      = putBin(codec.encodeAggregateKey(key), codec.encodeAggregateValue(value))
+    def updateAggregate(key: AggregateKey, value: AggregateValue): IO[Unit] = {
+      val bin = new Bin(config.aggregateBinName, codec.encodeAggregateValue(value))
+      putBin(codec.encodeAggregateKey(key), bin)
+    }
 
   }
   
