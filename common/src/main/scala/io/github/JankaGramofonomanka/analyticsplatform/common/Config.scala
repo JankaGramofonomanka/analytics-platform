@@ -8,8 +8,12 @@ import org.apache.kafka.common.serialization.{StringSerializer, StringDeserializ
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.clients.consumer._
 
+import com.aerospike.client.policy.{Policy, WritePolicy}
+import com.aerospike.client.AerospikeClient
+
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike.{Config => AerospikeConfig}
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Kafka._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 
 object Config {
 
@@ -38,20 +42,18 @@ object Config {
       val bucket      = "1m_bucket"
       val action      = "action"
       val origin      = "origin"
-      val brandId    = "brand_id"
-      val categoryId = "category_id"
-      val sumPrice   = "sum_price"
+      val brandId     = "brand_id"
+      val categoryId  = "category_id"
+      val sumPrice    = "sum_price"
       val count       = "count"
     }
   }
     
   object Aerospike {
     
-    import com.aerospike.client.policy.{Policy, WritePolicy, ClientPolicy}
-    import com.aerospike.client.{AerospikeClient, Host}
-
-    private val host = new Host("localhost", 3000)
-
+    private val HOSTNAME = Utils.getEnvVar("AEROSPIKE_HOSTNAME")
+    private val PORT: Int = Utils.getEnvVar("AEROSPIKE_PORT").toInt
+    
     // TODO specify policies
     val config = AerospikeConfig(
       new Policy(),
@@ -62,17 +64,17 @@ object Config {
       "profile",
       "aggregate",
     )
-    val client = new AerospikeClient(new ClientPolicy(), host)
+    val client = new AerospikeClient(HOSTNAME, PORT)
 
   }
 
   object Kafka {
-    val TOPIC = "test"
-    private val BOOTSTRAP_SERVERS = "localhost:9092"
 
+    val TOPIC = Utils.getEnvVar("KAFKA_TOPIC")
+    private val BOOTSTRAP_SERVERS = Utils.getEnvVar("KAFKA_BOOTSTRAP_SERVERS")
+    
     val pollTimeoutMillis: Long = 100
     
-
     def getProducerProps: Properties = {
       val props = new Properties()
       props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)

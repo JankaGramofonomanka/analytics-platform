@@ -11,4 +11,10 @@ object Utils {
   }
 
   def pure[F[_]: Monad, A](x: A): F[A] = implicitly[Monad[F]].pure(x)
+
+  def getEnvVar(varName: String): String
+    = sys.env.get(varName).getOrElse(throw new NoEnvironmentVariableException(varName))
+
+  final case class NoEnvironmentVariableException(varName: String)
+  extends Exception(s"Undefined environment variable `$varName`", None.orNull)
 }
