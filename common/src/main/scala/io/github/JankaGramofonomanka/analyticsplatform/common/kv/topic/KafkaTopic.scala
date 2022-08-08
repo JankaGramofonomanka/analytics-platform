@@ -16,12 +16,12 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 object KafkaTopic {
   
 
-  class Publisher(producer: KafkaProducer[String, UserTag], topicName: String)
+  class Publisher(producer: KafkaProducer[Nothing, UserTag], topicName: String)
   extends Topic.Publisher[IO, UserTag] {
 
     def publish(tag: UserTag): IO[Unit] = IO.delay {
 
-      val record = new ProducerRecord(topicName, Config.Kafka.key, tag)
+      val record = new ProducerRecord(topicName, tag)
 
       // TODO !!!!!!!!!!! this is a future!!!!!
       // TODO what does the result value do?
@@ -30,7 +30,7 @@ object KafkaTopic {
     }
   }
 
-  class Subscriber(consumer: KafkaConsumer[String, UserTag])
+  class Subscriber(consumer: KafkaConsumer[Nothing, UserTag])
   extends Topic.Subscriber[IO, UserTag] {
     
     def subscribe: Stream[IO, UserTag] = Stream.evalSeq {

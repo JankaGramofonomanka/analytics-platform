@@ -70,8 +70,6 @@ object Config {
     val TOPIC = "test"
     private val BOOTSTRAP_SERVERS = "localhost:9092"
 
-    // TODO should there be one key?, figure out the purpose of keys in kafka topics
-    val key = "tag"
     val pollTimeoutMillis: Long = 100
     
 
@@ -95,7 +93,6 @@ object Config {
 
       props
     }
-      
   }
 
   object Frontend {

@@ -15,7 +15,7 @@ object Main extends IOApp {
   def run(args: List[String]) = {
     val db = new Aerospike.DB(Config.Aerospike.client, Config.Aerospike.config)
     
-    val producer = new KafkaProducer[String, UserTag](Config.Kafka.getProducerProps)
+    val producer = new KafkaProducer[Nothing, UserTag](Config.Kafka.getProducerProps)
     
     val tagsToAggregate = new KafkaTopic.Publisher(producer, Config.Kafka.TOPIC)
 

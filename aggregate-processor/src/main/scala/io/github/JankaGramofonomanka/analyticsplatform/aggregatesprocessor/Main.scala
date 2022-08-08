@@ -18,7 +18,7 @@ object Main extends IOApp {
   def run(args: List[String]) = {  
     val aggregates = new Aerospike.DB(Config.Aerospike.client, Config.Aerospike.config)
 
-    val consumer = new KafkaConsumer[String, UserTag](Config.Kafka.getConsumerProps)
+    val consumer = new KafkaConsumer[Nothing, UserTag](Config.Kafka.getConsumerProps)
     consumer.subscribe(Collections.singletonList(Config.Kafka.TOPIC))
 
     val tagsToAggregate = new KafkaTopic.Subscriber(consumer)
