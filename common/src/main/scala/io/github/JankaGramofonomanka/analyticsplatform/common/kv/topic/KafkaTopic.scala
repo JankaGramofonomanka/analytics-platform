@@ -22,10 +22,7 @@ object KafkaTopic {
     def publish(tag: UserTag): IO[Unit] = IO.delay {
 
       val record = new ProducerRecord(topicName, tag)
-
-      // TODO !!!!!!!!!!! this is a future!!!!!
-      // TODO what does the result value do?
-      producer.send(record)
+      producer.send(record).get
       ()
     }
   }
