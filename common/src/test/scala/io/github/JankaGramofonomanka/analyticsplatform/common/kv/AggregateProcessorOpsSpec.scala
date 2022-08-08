@@ -5,7 +5,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.OpsSpecUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.TestCaseData._
 
 

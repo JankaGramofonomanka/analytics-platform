@@ -2,7 +2,7 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.kv
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.OpsSpecUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
 
 object TestCaseData {
   object Case1 {

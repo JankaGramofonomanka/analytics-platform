@@ -9,7 +9,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.OpsSpecUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
 
 
 

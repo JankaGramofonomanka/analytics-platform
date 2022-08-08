@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.common.kv
+package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import scala.collection.mutable.{Queue, Map}
 
@@ -13,7 +13,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.{Mock => 
 
 
 
-object OpsSpecUtils {
+object TestUtils {
   final case class Storage(
     profiles:   Map[Cookie, SimpleProfile],
     aggregates: Map[AggregateKey, AggregateValue],
@@ -43,7 +43,6 @@ object OpsSpecUtils {
     (frontend, aggregateProcessor)
   }
 
-  // TODO move this somewhere
   def getTimeRangeContaining(timestamp: Timestamp): TimeRange = {
     val from  = timestamp.getBucket.toTimestamp
     val to    = timestamp.getBucket.addMinutes(1).toTimestamp
