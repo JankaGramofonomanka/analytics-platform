@@ -72,6 +72,7 @@ object Config {
 
     val TOPIC = Utils.getEnvVar("KAFKA_TOPIC")
     private val BOOTSTRAP_SERVERS = Utils.getEnvVar("KAFKA_BOOTSTRAP_SERVERS")
+    private val GROUP = Utils.getEnvVar("KAFKA_GROUP")
     
     val pollTimeoutMillis: Long = 100
     
@@ -91,7 +92,7 @@ object Config {
       
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   classOf[StringDeserializer])
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[UserTagDeserializer])
-      props.put("group.id", "something")
+      props.put("group.id", GROUP)
 
       props
     }

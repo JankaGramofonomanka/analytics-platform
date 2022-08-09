@@ -57,6 +57,7 @@ services:
       AEROSPIKE_PORT: 3000
       KAFKA_TOPIC: tags-to-aggregate
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_GROUP: aggregate-processors
   
   aggregate-processor:
     build:
@@ -73,3 +74,4 @@ services:
       AEROSPIKE_PORT: 3000
       KAFKA_TOPIC: tags-to-aggregate
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_GROUP: aggregate-processors
