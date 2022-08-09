@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: ../../../../
+      dockerfile: ./frontend/src/main/docker/Dockerfile
+    image: jankagramofonomanka/analytics-platform-frontend
+    container_name: frontend
+    ports:
+      - 8080:8080
+    environment:
+      AEROSPIKE_HOSTNAME: ${AEROSPIKE_HOSTNAME}
+      AEROSPIKE_PORT: 3000
+      KAFKA_TOPIC: tags-to-aggregate
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}

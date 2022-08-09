@@ -1,0 +1,12 @@
+version: '3'
+services:
+  aerospike:
+    image: aerospike/aerospike-server
+    container_name: aerospike
+    ports:
+      - 3000-3002:3000-3002
+    environment:
+      NAMESPACE: analyticsplatform
+
+
+
