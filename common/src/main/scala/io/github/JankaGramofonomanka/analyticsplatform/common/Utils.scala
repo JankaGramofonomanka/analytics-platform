@@ -2,6 +2,8 @@ package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import cats._
 
+import java.time.LocalDateTime
+
 object Utils {
   def checkForNull[A](x: A): Option[A] = if (x == null) None else Some(x)
 
@@ -17,4 +19,14 @@ object Utils {
 
   final case class NoEnvironmentVariableException(varName: String)
   extends Exception(s"Undefined environment variable `$varName`", None.orNull)
+
+  def roundToMinutes(dt: LocalDateTime): LocalDateTime = {
+    val year    = dt.getYear
+    val month   = dt.getMonthValue
+    val day     = dt.getDayOfMonth
+    val hour    = dt.getHour
+    val minute  = dt.getMinute
+
+    LocalDateTime.of(year, month, day, hour, minute)
+  }
 }

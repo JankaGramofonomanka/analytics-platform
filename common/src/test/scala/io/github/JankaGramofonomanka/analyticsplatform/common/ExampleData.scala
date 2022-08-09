@@ -1,6 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
-import java.time.{LocalDateTime}
+import java.time.LocalDateTime
 
 import io.circe._
 import io.circe.literal._
@@ -15,10 +15,11 @@ object ExampleData {
   val bucket    = Bucket(LocalDateTime.parse(bucketStr))
 
   private val timestampStr = "1986-05-23T13:54:39.465"
+  private val timestampJsonStr = s"${timestampStr}Z"
   val timestamp = Timestamp(LocalDateTime.parse(timestampStr))
-  val from      = Timestamp(LocalDateTime.parse("1986-05-23T13:53:00.000"))
-  val to        = Timestamp(LocalDateTime.parse("1986-05-23T13:56:00"))
-  val timeRange = TimeRange(from: Timestamp, to: Timestamp)
+  val from      = LocalDateTime.parse("1986-05-23T13:53:00.000")
+  val to        = LocalDateTime.parse("1986-05-23T13:56:00")
+  val timeRange = TimeRange(from, to)
   
   val limit       = 50
   val action      = BUY
@@ -36,7 +37,7 @@ object ExampleData {
   val categoryId  = CategoryId("building-materials")
   val country     = Country("USA")
   val price       = Price(200000)
-  val productId   = ProductId("2938563249752")
+  val productId   = ProductId(563249752)
   
   val productInfo = ProductInfo(productId, brandId, categoryId, price)
 
@@ -65,7 +66,7 @@ object ExampleData {
   val userTagJsonB  = jsonTag(userTagB.action)
 
   private def jsonTag(action: Action): Json = json"""{
-    "time":     ${timestampStr},
+    "time":     ${timestampJsonStr},
     "cookie":   ${cookie.value},
     "country":  ${country.value},
     "device":   ${Device.encode(device)},
@@ -96,14 +97,18 @@ object ExampleData {
   object Specification {
     // Examples from the task specification
 
+
+    val timestampJson = json""""2022-03-22T12:15:00.000Z""""
+    val timestamp = Timestamp(LocalDateTime.parse("2022-03-22T12:15:00.000"))
+
     val datetimeJson1 = json""""2022-03-22T12:15:00.000""""
     val datetimeJson2 = json""""2022-03-22T12:15:00""""
     val datetime = Timestamp(LocalDateTime.parse("2022-03-22T12:15:00.000"))
 
     val timeRangeJson = json""""2022-03-22T12:15:00.000_2022-03-22T12:30:00.000""""
     val timeRange = TimeRange(
-      Timestamp(LocalDateTime.parse("2022-03-22T12:15:00.000")),
-      Timestamp(LocalDateTime.parse("2022-03-22T12:30:00.000")),
+      LocalDateTime.parse("2022-03-22T12:15:00.000"),
+      LocalDateTime.parse("2022-03-22T12:30:00.000"),
     )
 
 
@@ -125,7 +130,7 @@ object ExampleData {
       )
     )
 
-    
+
 
   }
 

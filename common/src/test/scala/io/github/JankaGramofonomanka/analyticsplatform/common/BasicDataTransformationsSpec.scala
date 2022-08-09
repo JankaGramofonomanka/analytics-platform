@@ -37,15 +37,15 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     
   }
   "`TimeRange.contains`" in {
-    val from      = ExampleData.timestamp.getBucket.toTimestamp
-    val to        = ExampleData.timestamp.getBucket.addMinutes(1).toTimestamp
-    val timeRange = TimeRange(from, to)
+    val from      = ExampleData.timestamp.getBucket
+    val to        = ExampleData.timestamp.getBucket.addMinutes(1)
+    val timeRange = TimeRange(from.toDateTime, to.toDateTime)
     assert(timeRange.contains(ExampleData.timestamp))
-    assert(timeRange.contains(from))
-    assert(!timeRange.contains(to))
+    assert(timeRange.contains(from.toTimestamp))
+    assert(!timeRange.contains(to.toTimestamp))
 
-    val before  = from.getBucket.addMinutes(-1) .toTimestamp
-    val after   = to  .getBucket.addMinutes(1)  .toTimestamp
+    val before  = from.addMinutes(-1) .toTimestamp
+    val after   = to  .addMinutes(1)  .toTimestamp
     assert(!timeRange.contains(before))
     assert(!timeRange.contains(after))
   }
@@ -54,7 +54,7 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
       val from  = ExampleData.bucket
       val to    = ExampleData.bucket.addMinutes(1)
 
-      val timeRange = TimeRange(from.toTimestamp, to.toTimestamp)
+      val timeRange = TimeRange(from.toDateTime, to.toDateTime)
       val buckets = timeRange.getBuckets
       assert(buckets.length == 1)
       assert(buckets.contains(from))
@@ -65,7 +65,7 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
       val between = ExampleData.bucket.addMinutes(1)
       val to      = ExampleData.bucket.addMinutes(2)
 
-      val timeRange = TimeRange(from.toTimestamp, to.toTimestamp)
+      val timeRange = TimeRange(from.toDateTime, to.toDateTime)
       val buckets = timeRange.getBuckets
       assert(buckets.length == 2)
       assert(buckets.contains(from))

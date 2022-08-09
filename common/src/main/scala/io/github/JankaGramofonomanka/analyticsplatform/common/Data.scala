@@ -7,22 +7,13 @@ import java.time.temporal.ChronoUnit
 import cats.syntax.either._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 
 object Data {
   final case class Cookie(value: String) extends AnyVal
 
-  private def roundToMinutes(dt: LocalDateTime): LocalDateTime = {
-    val year    = dt.getYear
-    val month   = dt.getMonthValue
-    val day     = dt.getDayOfMonth
-    val hour    = dt.getHour
-    val minute  = dt.getMinute
-
-    LocalDateTime.of(year, month, day, hour, minute)
-  }
-
   final case class Timestamp(value: LocalDateTime) extends AnyVal {
-    def getBucket: Bucket = Bucket(roundToMinutes(value))
+    def getBucket: Bucket = Bucket(Utils.roundToMinutes(value))
 
     def isAfter (ts: Timestamp): Boolean = value.isAfter  (ts.value)
     def isBefore(ts: Timestamp): Boolean = value.isBefore (ts.value)
@@ -31,12 +22,12 @@ object Data {
   }
   object Timestamp {
     def parse(s: String): Either[String, Timestamp]
-      = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s)))
-        .leftMap(err => cannotParseWithMsg("datetime", err.getMessage))
+      = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s, formatter)))
+        .leftMap(err => cannotParseWithMsg("timestamp", err.getMessage))
 
     def encode(ts: Timestamp): String = ts.value.format(formatter)
 
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
   }
 
   // TODO how to enforce rounding of `value` on bucket creation?
@@ -44,7 +35,7 @@ object Data {
     def addMinutes(n: Long): Bucket = Bucket(value.plus(n, ChronoUnit.MINUTES))
     
     def toTimestamp: Timestamp = Timestamp(value)
-    def toDateTime: LocalDateTime = value
+    def toDateTime: DateTime = value
 
     def isAfter (bucket: Bucket): Boolean = value.isAfter (bucket.value)
     def isBefore(bucket: Bucket): Boolean = value.isBefore(bucket.value)
@@ -54,23 +45,38 @@ object Data {
   object Bucket {
     
     def parse(s: String): Either[String, Bucket]
-      = Timestamp.parse(s).map(_.getBucket)
+      = Either.catchNonFatal(Bucket(LocalDateTime.parse(s, formatter)))
+        .leftMap(err => cannotParseWithMsg("bucket", err.getMessage))
+      
 
     def encode(b: Bucket): String = b.value.format(formatter)
 
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
   }
 
-  final case class TimeRange(from: Timestamp, to: Timestamp) {
+  type DateTime = LocalDateTime
+  object DateTime {
+    def parse(s: String): Either[String, DateTime]
+      = Either.catchNonFatal(LocalDateTime.parse(s))
+        .leftMap(err => cannotParseWithMsg("datetime", err.getMessage))
+    
+    def encode(dt: DateTime): String = dt.format(formatter)
+
+    def getBucket(dt: DateTime): Bucket = Bucket(Utils.roundToMinutes(dt))
+    
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+  }
+
+  final case class TimeRange(from: DateTime, to: DateTime) {
     def contains(ts: Timestamp): Boolean
-      = (!from.isAfter(ts)) && ts.isBefore(to)
+      = (!from.isAfter(ts.value)) && ts.value.isBefore(to)
 
     // TODO is `Vector` ok?
     def getBuckets: Vector[Bucket] = {
 
-      val numBuckets = ChronoUnit.MINUTES.between(from.value, to.value)
+      val numBuckets = ChronoUnit.MINUTES.between(from, to)
 
-      val first = from.getBucket
+      val first = DateTime.getBucket(from)
 
       val range = Range.Long(0, numBuckets, 1)
       range.map(n => first.addMinutes(n)).toVector
@@ -86,15 +92,15 @@ object Data {
         fromS <- Either.catchNonFatal(items(0)).leftMap(_ => cannotParse("time range"))
         toS   <- Either.catchNonFatal(items(1)).leftMap(_ => cannotParse("time range"))
         
-        from  <- Timestamp.parse(fromS)
-        to    <- Timestamp.parse(toS)
+        from  <- DateTime.parse(fromS)
+        to    <- DateTime.parse(toS)
         
       } yield TimeRange(from, to)
     }
 
     def encode(tr: TimeRange): String = {
-      val fromS = Timestamp.encode(tr.from)
-      val toS   = Timestamp.encode(tr.to)
+      val fromS = DateTime.encode(tr.from)
+      val toS   = DateTime.encode(tr.to)
       s"${fromS}_${toS}"}
   }
 
@@ -146,7 +152,7 @@ object Data {
   final case class Price(value: Int)        extends AnyVal {
     def +(other: Price) = Price(value + other.value)
   }
-  final case class ProductId(value: String) extends AnyVal
+  final case class ProductId(value: Int) extends AnyVal
 
   
   sealed trait Device

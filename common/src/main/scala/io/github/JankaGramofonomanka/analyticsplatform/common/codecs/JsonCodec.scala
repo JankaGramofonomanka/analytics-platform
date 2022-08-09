@@ -59,8 +59,8 @@ object JsonCodec {
   implicit val priceDecoder:      Decoder[Price]      = Decoder.decodeInt.emap { s => Right(Price(s)) }
   implicit val priceEncoder:      Encoder[Price]      = Encoder.encodeInt.contramap[Price](_.value)
   
-  implicit val productIdDecoder:  Decoder[ProductId]  = Decoder.decodeString.emap { s => Right(ProductId(s)) }
-  implicit val productIdEncoder:  Encoder[ProductId]  = Encoder.encodeString.contramap[ProductId](_.value)
+  implicit val productIdDecoder:  Decoder[ProductId]  = Decoder.decodeInt.emap { i => Right(ProductId(i)) }
+  implicit val productIdEncoder:  Encoder[ProductId]  = Encoder.encodeInt.contramap[ProductId](_.value)
 
 
   implicit val productInfoDecoder:    Decoder[ProductInfo]    = deriveConfiguredDecoder[ProductInfo]

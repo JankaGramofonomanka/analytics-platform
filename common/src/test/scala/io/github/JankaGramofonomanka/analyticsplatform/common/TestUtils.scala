@@ -44,8 +44,8 @@ object TestUtils {
   }
 
   def getTimeRangeContaining(timestamp: Timestamp): TimeRange = {
-    val from  = timestamp.getBucket.toTimestamp
-    val to    = timestamp.getBucket.addMinutes(1).toTimestamp
+    val from  = timestamp.getBucket.toDateTime
+    val to    = timestamp.getBucket.addMinutes(1).toDateTime
     TimeRange(from, to)
   }
 }

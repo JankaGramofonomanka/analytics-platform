@@ -70,16 +70,16 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
     "takes time range into account" in {
       
-      val plus0 = ExampleData.bucket.toTimestamp
-      val plus1 = ExampleData.bucket.addMinutes(1).toTimestamp
-      val plus2 = ExampleData.bucket.addMinutes(2).toTimestamp
-      val plus3 = ExampleData.bucket.addMinutes(3).toTimestamp
+      val plus0 = ExampleData.bucket
+      val plus1 = ExampleData.bucket.addMinutes(1)
+      val plus2 = ExampleData.bucket.addMinutes(2)
+      val plus3 = ExampleData.bucket.addMinutes(3)
       
       val cookie = ExampleData.userTag.cookie
-      val included = ExampleData.userTag.copy(time = plus1)
-      val excluded = ExampleData.userTag.copy(time = plus3)
+      val included = ExampleData.userTag.copy(time = plus1.toTimestamp)
+      val excluded = ExampleData.userTag.copy(time = plus3.toTimestamp)
 
-      val timeRange = TimeRange(plus0, plus2)
+      val timeRange = TimeRange(plus0.toDateTime, plus2.toDateTime)
 
       val profile = SimpleProfile(Vector(included, excluded))
       storage.profiles.put(cookie, profile)
@@ -95,16 +95,16 @@ class FrontendOpsSpec extends AnyFreeSpec {
     }
 
     "takes limit into account" in {
-      val plus0 = ExampleData.bucket.toTimestamp
-      val plus1 = ExampleData.bucket.addMinutes(1).toTimestamp
-      val plus2 = ExampleData.bucket.addMinutes(2).toTimestamp
-      val plus3 = ExampleData.bucket.addMinutes(3).toTimestamp
+      val plus0 = ExampleData.bucket
+      val plus1 = ExampleData.bucket.addMinutes(1)
+      val plus2 = ExampleData.bucket.addMinutes(2)
+      val plus3 = ExampleData.bucket.addMinutes(3)
       
       val cookie = ExampleData.userTag.cookie
-      val included = ExampleData.userTag.copy(time = plus2)
-      val excluded = ExampleData.userTag.copy(time = plus1)
+      val included = ExampleData.userTag.copy(time = plus2.toTimestamp)
+      val excluded = ExampleData.userTag.copy(time = plus1.toTimestamp)
 
-      val timeRange = TimeRange(plus0, plus3)
+      val timeRange = TimeRange(plus0.toDateTime, plus3.toDateTime)
 
       val profile = SimpleProfile(Vector(included, excluded))
       storage.profiles.put(cookie, profile)
@@ -130,9 +130,9 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
     storage.aggregates.put(key, value)
 
-    val from      = key.bucket.addMinutes(-1).toTimestamp
-    val to        = key.bucket.addMinutes(2) .toTimestamp
-    val timeRange = TimeRange(from, to)
+    val from      = key.bucket.addMinutes(-1)
+    val to        = key.bucket.addMinutes(2)
+    val timeRange = TimeRange(from.toDateTime, to.toDateTime)
     
     val returned = frontend.getAggregates(timeRange, fields).unsafeRunSync()
     
@@ -144,8 +144,8 @@ class FrontendOpsSpec extends AnyFreeSpec {
       assert(Utils.isSortedWith((b1: Bucket, b2: Bucket) => !b1.isAfter(b2))(buckets))
     }
     "returns aggregates in the given time range" in {
-      assert(buckets.head == from.getBucket)
-      assert(buckets.last == to.getBucket.addMinutes(-1))
+      assert(buckets.head == from)
+      assert(buckets.last == to.addMinutes(-1))
     }
   }
 }

@@ -62,7 +62,7 @@ class JsonCodecSpec extends AnyFreeSpec {
     
     "examples from specification" - {
       val Examples = ExampleData.Specification
-      "datetime"    in testEncoding[Timestamp]  (Examples.datetime,    Examples.datetimeJson1)
+      "timestamp"   in testEncoding[Timestamp]  (Examples.timestamp,   Examples.timestampJson)
       "time range"  in testEncoding[TimeRange]  (Examples.timeRange,   Examples.timeRangeJson)
       "aggregates"  in testEncoding[Aggregates] (Examples.aggregates,  Examples.aggregatesJson)
     }
@@ -73,8 +73,8 @@ class JsonCodecSpec extends AnyFreeSpec {
     "`UserTag`" in testDecoding(ExampleData.userTagJson, ExampleData.userTag)
     "examples from specification" - {
       val Examples = ExampleData.Specification
-      "datetime"    in testDecoding(Examples.datetimeJson1, Examples.datetime)
-      "time range"  in testDecoding(Examples.timeRangeJson, Examples.timeRange)
+      "timestamp"   in testDecoding[Timestamp](Examples.timestampJson, Examples.timestamp)
+      "time range"  in testDecoding[TimeRange](Examples.timeRangeJson, Examples.timeRange)
     }
     
 
