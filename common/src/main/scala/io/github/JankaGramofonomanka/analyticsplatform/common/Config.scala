@@ -99,7 +99,9 @@ object Config {
   }
 
   object Frontend {
+    
     val host = ipv4"0.0.0.0"
-    val port = port"8080"
+    val port = Port.fromString(Utils.getEnvVar("FRONTEND_PORT"))
+      .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse port"))
   }
 }

@@ -20,6 +20,9 @@ object Utils {
   final case class NoEnvironmentVariableException(varName: String)
   extends Exception(s"Undefined environment variable `$varName`", None.orNull)
 
+  final case class InvalidEnvironmentVariableException(varName: String)
+  extends Exception(s"invalid value of environment variable `$varName`", None.orNull)
+
   def roundToMinutes(dt: LocalDateTime): LocalDateTime = {
     val year    = dt.getYear
     val month   = dt.getMonthValue
