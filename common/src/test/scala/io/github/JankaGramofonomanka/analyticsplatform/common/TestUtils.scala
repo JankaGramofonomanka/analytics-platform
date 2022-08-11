@@ -2,7 +2,6 @@ package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import scala.collection.mutable.{Queue, Map}
 
-import cats._
 import cats.effect._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
@@ -15,8 +14,8 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.{Mock => 
 
 object TestUtils {
   final case class Storage(
-    profiles:   Map[Cookie, SimpleProfile],
-    aggregates: Map[AggregateKey, AggregateValue],
+    profiles:   Map[Cookie, TrackGen[SimpleProfile]],
+    aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
     queue:      Queue[UserTag],
   )
 
@@ -31,9 +30,9 @@ object TestUtils {
     subscriber: Topic.Subscriber[F, UserTag],
   )
 
-  def getMocks[F[_]: Monad](storage: Storage): StorageInterface[F] = {
-    val db    = new MockDB[F](storage.profiles, storage.aggregates)
-    val topic = new MockTopic[F](storage.queue)
+  def getMocks(storage: Storage): StorageInterface[IO] = {
+    val db    = new MockDB(storage.profiles, storage.aggregates)
+    val topic = new MockTopic(storage.queue)
     StorageInterface(db, db, topic.Publisher, topic.Subscriber)
   }
 

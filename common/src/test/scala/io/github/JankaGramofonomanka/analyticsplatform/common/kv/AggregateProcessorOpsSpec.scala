@@ -14,7 +14,7 @@ class AggregateProcessorOpsSpec extends AnyFreeSpec {
   "`AggregateProcessorOps.processTags`" - {
     
     val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    val interface = getMocks(storage)
 
     val (_, proc) = getOps[IO](interface)
 
@@ -26,17 +26,17 @@ class AggregateProcessorOpsSpec extends AnyFreeSpec {
 
 
     "correctly processes one tag" in {
-      val result = storage.aggregates.get(Case1.keyRS)
+      val result = storage.aggregates.get(Case1.keyRS).map(_.value)
       assert(result == Some(Case1.expectedAggregateValueRS))
     }
     
     "correctly processes two tags" in {
-      val result = storage.aggregates.get(Case1.keyWO)
+      val result = storage.aggregates.get(Case1.keyWO).map(_.value)
       assert(result == Some(Case1.expectedAggregateValueWO))
     }
     
     "correctly processes tags with differend field values" in {
-      val result = storage.aggregates.get(Case1.keyAll)
+      val result = storage.aggregates.get(Case1.keyAll).map(_.value)
       assert(result == Some(Case1.expectedAggregateValueAll))
     }  
   }

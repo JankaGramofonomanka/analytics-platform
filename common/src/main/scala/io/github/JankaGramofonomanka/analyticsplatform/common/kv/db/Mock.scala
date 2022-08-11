@@ -2,36 +2,51 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.kv.db
 
 import scala.collection.mutable.Map
 
-import cats._
-import cats.implicits._
+import cats.effect._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
 
+class Mock(
+  private val profiles:   Map[Cookie, TrackGen[SimpleProfile]],
+  private val aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
+) extends ProfilesDB[IO] with AggregatesDB[IO] {
 
-class Mock[F[_]: Monad](
-  profiles:   Map[Cookie, SimpleProfile],
-  aggregates: Map[AggregateKey, AggregateValue],
-) extends ProfilesDB[F] with AggregatesDB[F] {
+  private def tryUpdate[K, V](key: K, value: TrackGen[V], map: Map[K, TrackGen[V]]): IO[Boolean]
 
-  private def pure[A](x: A): F[A] = Utils.pure[F, A](x)
+    // TODO does this guarantee atomic execution?
+    = IO.delay {
+      val newValue = TrackGen(value.value, value.generation + 1)
+      val old = map.get(key)
+      old match {
+        case None => {
+            map.put(key, newValue)
+            true
+          }
+        case Some(old) => {
+          if (old.generation == value.generation) {
+            map.put(key, newValue) 
+            true
+          } else {
+            false
+          }
+        }
+      }
+    }
+
+  def getProfile(cookie: Cookie): IO[TrackGen[SimpleProfile]]
+    = IO.delay { profiles.get(cookie).getOrElse(TrackGen.default(SimpleProfile.default)) }
+
+  def updateProfile(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean]
+    = tryUpdate(cookie, profile, profiles)
+
+  def getAggregate(key: AggregateKey): IO[TrackGen[AggregateValue]]
+    = IO.delay { aggregates.get(key).getOrElse(TrackGen.default(AggregateValue.default)) }
   
-
-  def getProfile(cookie: Cookie): F[SimpleProfile]
-    = pure(profiles.get(cookie).getOrElse(SimpleProfile.default))
-
-  def updateProfile(cookie: Cookie, profile: SimpleProfile): F[Unit]
-    = pure(profiles.addOne((cookie, profile)))
-
-  def getAggregate(key: AggregateKey): F[AggregateValue]
-    = pure(aggregates.get(key).getOrElse(AggregateValue.default))
-  
-  def updateAggregate(key: AggregateKey, value: AggregateValue): F[Unit]
-    = pure(aggregates.put(key, value)) >> pure(())
-
+  def updateAggregate(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean]
+    = tryUpdate(key, value, aggregates)
 }
 
 object Mock {
-  def default[F[_]: Monad] = new Mock[F](Map(), Map())
+  def default = new Mock(Map(), Map())
 }

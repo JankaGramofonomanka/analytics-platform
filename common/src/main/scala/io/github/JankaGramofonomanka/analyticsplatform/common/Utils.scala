@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import cats._
+import cats.implicits._
 
 import java.time.LocalDateTime
 
@@ -32,4 +33,9 @@ object Utils {
 
     LocalDateTime.of(year, month, day, hour, minute)
   }
+
+  def tryTillSuccess[F[_]: Monad](tryOnce: F[Boolean]): F[Unit] = for {
+    success <- tryOnce
+    _ <- if (success) pure[F, Unit](()) else tryTillSuccess(tryOnce)
+  } yield ()
 }

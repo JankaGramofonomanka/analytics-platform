@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer._
 import org.apache.kafka.clients.consumer._
 
 import com.aerospike.client.policy.{Policy, WritePolicy}
+import com.aerospike.client.policy.GenerationPolicy._
 import com.aerospike.client.AerospikeClient
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike.{Config => AerospikeConfig}
@@ -54,10 +55,13 @@ object Config {
     private val HOSTNAME = Utils.getEnvVar("AEROSPIKE_HOSTNAME")
     private val PORT: Int = Utils.getEnvVar("AEROSPIKE_PORT").toInt
     
+    private val writePolicy = new WritePolicy()
+    writePolicy.generationPolicy = EXPECT_GEN_EQUAL
+
     // TODO specify policies
     val config = AerospikeConfig(
       new Policy(),
-      new WritePolicy(),
+      writePolicy,
       "analyticsplatform",
       "profiles",
       "aggregates",
@@ -92,7 +96,7 @@ object Config {
       
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   classOf[StringDeserializer])
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[UserTagDeserializer])
-      props.put("group.id", GROUP)
+      props.put(ConsumerConfig.GROUP_ID_CONFIG,                 GROUP)
 
       props
     }

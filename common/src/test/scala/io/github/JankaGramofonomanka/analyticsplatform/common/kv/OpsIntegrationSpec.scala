@@ -14,7 +14,7 @@ class OpsIntegrationSpec extends AnyFreeSpec {
 
   "case 1" - {
     val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    val interface = getMocks(storage)
 
     val (frontend, proc) = getOps[IO](interface)
 
@@ -63,7 +63,7 @@ class OpsIntegrationSpec extends AnyFreeSpec {
 
   "case 2" - {
     val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    val interface = getMocks(storage)
 
     val (frontend, _) = getOps[IO](interface)
 

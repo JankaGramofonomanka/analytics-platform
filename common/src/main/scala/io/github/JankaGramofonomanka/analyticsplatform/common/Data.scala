@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+import cats._
+import cats.syntax.functor._
 import cats.syntax.either._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
@@ -236,7 +238,9 @@ object Data {
 
   final case class AggregateItem(bucket: Bucket, value: AggregateValue)
 
-  final case class AggregateValue(count: Int, sumPrice: Price)
+  final case class AggregateValue(count: Int, sumPrice: Price) {
+    def update(price: Price): AggregateValue = AggregateValue(count + 1, sumPrice + price)
+  }
   object AggregateValue {
     val default: AggregateValue = AggregateValue(0, Price(0))
   }
@@ -270,6 +274,21 @@ object Data {
       = AggregateKey(bucket, fields.action, fields.origin, fields.brandId, fields.categoryId)
   }
 
-  
+  type Generation = Int
+  object Generation {
+    val default: Generation = 0
+  }
+
+  final case class TrackGen[T](value: T, generation: Int) {
+    def map[TT](f: T => TT) = TrackGen(f(value), generation)
+    def traverse[F[_]: Functor, TT](f: T => F[TT]): F[TrackGen[TT]]
+      = f(value).map(v => TrackGen[TT](v, generation))
+  }
+
+  object TrackGen {
+    def default[T](value: T): TrackGen[T] = TrackGen(value, 0)
+  }
+
+
 
 }

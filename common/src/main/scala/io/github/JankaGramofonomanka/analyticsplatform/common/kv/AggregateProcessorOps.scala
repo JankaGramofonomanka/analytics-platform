@@ -7,6 +7,7 @@ import cats.implicits._
 import fs2.Stream
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.AggregatesDB
 
@@ -22,8 +23,9 @@ class AggregateProcessorOps[F[_]: Sync](
       _ <- keys.traverse { key =>
         for {
           value <- aggregates.getAggregate(key)
-          newValue = AggregateValue(value.count + 1, value.sumPrice + tag.productInfo.price)
-          unit <- aggregates.updateAggregate(key, newValue)
+          
+          newValue = value.map(_.update(tag.productInfo.price))
+          unit <- Utils.tryTillSuccess(aggregates.updateAggregate(key, newValue))
         } yield unit
       }
     } yield ExitCode.Success

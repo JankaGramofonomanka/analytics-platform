@@ -17,31 +17,33 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
   "`FrontendOps.storeTag`" - {
 
-    val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    {
+      val storage = Storage.empty
+      val interface = getMocks(storage)
 
-    val (frontend, _) = getOps[IO](interface)
+      val (frontend, _) = getOps[IO](interface)
 
-    val tag = ExampleData.userTag
-    frontend.storeTag(tag).unsafeRunSync()
+      val tag = ExampleData.userTag
+      frontend.storeTag(tag).unsafeRunSync()
 
-    "stores the tag" in {
-      val profile = storage.profiles.get(tag.cookie)
-      assert(profile.nonEmpty)
-      assert(profile.get.tags.contains(tag))
-    }
+      "stores the tag" in {
+        val profile = storage.profiles.get(tag.cookie)
+        assert(profile.nonEmpty)
+        assert(profile.get.value.tags.contains(tag))
+      }
 
-    "publishes the tag" in {
-      val expected = tag
-      val actual = storage.queue.dequeue()
-      assert(expected == actual)
+      "publishes the tag" in {
+        val expected = tag
+        val actual = storage.queue.dequeue()
+        assert(expected == actual)
+      }
     }
   }
 
   "`FrontendOps.getProfile`" - {
 
     val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    val interface = getMocks(storage)
 
     val (frontend, _) = getOps[IO](interface)
 
@@ -57,7 +59,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     
       val tag = ExampleData.userTag
       val profile = SimpleProfile(Vector(tag))
-      storage.profiles.put(tag.cookie, profile)
+      storage.profiles.put(tag.cookie, TrackGen.default(profile))
 
       val timeRange = getTimeRangeContaining(tag.time)
       val limit     = Config.Other.numTagsToKeep
@@ -82,7 +84,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
       val timeRange = TimeRange(plus0.toDateTime, plus2.toDateTime)
 
       val profile = SimpleProfile(Vector(included, excluded))
-      storage.profiles.put(cookie, profile)
+      storage.profiles.put(cookie, TrackGen.default(profile))
 
       val limit     = Config.Other.numTagsToKeep
       
@@ -107,7 +109,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
       val timeRange = TimeRange(plus0.toDateTime, plus3.toDateTime)
 
       val profile = SimpleProfile(Vector(included, excluded))
-      storage.profiles.put(cookie, profile)
+      storage.profiles.put(cookie, TrackGen.default(profile))
 
       val returned = frontend.getProfile(cookie, timeRange, 1).unsafeRunSync()
       
@@ -120,7 +122,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
   "`FrontendOps.getAggregates`" - {
     val storage = Storage.empty
-    val interface = getMocks[IO](storage)
+    val interface = getMocks(storage)
 
     val (frontend, _) = getOps[IO](interface)
 
@@ -128,7 +130,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
     val key     = AggregateKey.fromFields(ExampleData.bucket, fields)
     val value   = ExampleData.aggregateValue
 
-    storage.aggregates.put(key, value)
+    storage.aggregates.put(key, TrackGen.default(value))
 
     val from      = key.bucket.addMinutes(-1)
     val to        = key.bucket.addMinutes(2)

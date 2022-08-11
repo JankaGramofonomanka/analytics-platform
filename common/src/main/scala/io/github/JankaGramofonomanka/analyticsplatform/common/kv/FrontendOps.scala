@@ -5,6 +5,7 @@ import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
 
@@ -13,20 +14,23 @@ class FrontendOps[F[_]: Sync](
   aggregates: AggregatesDB[F],
   tagsToAggregate: Topic.Publisher[F, UserTag]
 ) {
+  
+  private def tryStoreTag(tag: UserTag): F[Boolean] = for {
+    profile <- profiles.getProfile(tag.cookie)
+    updated = profile.map(_.update(tag, Config.Other.numTagsToKeep))
+    result <- profiles.updateProfile(tag.cookie, updated)
+  } yield result
 
   def storeTag(tag: UserTag): F[Unit] = for {
-
-    profile <- profiles.getProfile(tag.cookie)
-    updatedProfile = profile.update(tag, Config.Other.numTagsToKeep)
-    _ <- profiles.updateProfile(tag.cookie, updatedProfile)
+    _ <- Utils.tryTillSuccess(tryStoreTag(tag))
     _ <- tagsToAggregate.publish(tag)
   } yield ()
 
 
   def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[PrettyProfile] = for {
     profile <- profiles.getProfile(cookie)
-    limited = SimpleProfile(profile.tags.filter(tag => timeRange.contains(tag.time)).take(limit))
-  } yield limited.prettify(cookie)
+    tags = profile.value.tags.filter(tag => timeRange.contains(tag.time)).take(limit)
+  } yield SimpleProfile(tags).prettify(cookie)
 
   def getAggregates(
       timeRange:  TimeRange,
@@ -36,7 +40,7 @@ class FrontendOps[F[_]: Sync](
       val buckets = timeRange.getBuckets
       val keys = buckets.map(bucket => AggregateKey.fromFields(bucket, fields))
       for {
-        aggregateValues <- keys.traverse { key => aggregates.getAggregate(key) }
+        aggregateValues <- keys.traverse { key => aggregates.getAggregate(key).map(_.value) }
         
         values = for {
           (bucket, value) <- buckets.zip(aggregateValues)
