@@ -7,7 +7,7 @@ import cats.effect._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.{FrontendOps, AggregateProcessorOps}
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{Mock => MockDB}
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.{Mock => MockTopic, Topic}
 
 
@@ -24,8 +24,8 @@ object TestUtils {
   }
 
   final case class StorageInterface[F[_]](
-    profiles:   ProfilesDB[F],
-    aggregates: AggregatesDB[F],
+    profiles:   KeyValueDB[F, Cookie, SimpleProfile],
+    aggregates: KeyValueDB[F, AggregateKey, AggregateValue],
     publisher:  Topic.Publisher[F, UserTag],
     subscriber: Topic.Subscriber[F, UserTag],
   )
@@ -33,7 +33,7 @@ object TestUtils {
   def getMocks(storage: Storage): StorageInterface[IO] = {
     val db    = new MockDB(storage.profiles, storage.aggregates)
     val topic = new MockTopic(storage.queue)
-    StorageInterface(db, db, topic.Publisher, topic.Subscriber)
+    StorageInterface(db.Profiles, db.Aggregates, topic.Publisher, topic.Subscriber)
   }
 
   def getOps[F[_]: Sync](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {

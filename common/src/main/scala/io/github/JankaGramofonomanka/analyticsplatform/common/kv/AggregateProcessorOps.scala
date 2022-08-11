@@ -9,10 +9,10 @@ import fs2.Stream
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.AggregatesDB
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
 
 class AggregateProcessorOps[F[_]: Sync](
-  aggregates:       AggregatesDB[F],
+  aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
   tagsToAggregate:  Topic.Subscriber[F, UserTag],
 ) {
 
@@ -22,10 +22,10 @@ class AggregateProcessorOps[F[_]: Sync](
     for {
       _ <- keys.traverse { key =>
         for {
-          value <- aggregates.getAggregate(key)
+          value <- aggregates.get(key)
           
           newValue = value.map(_.update(tag.productInfo.price))
-          unit <- Utils.tryTillSuccess(aggregates.updateAggregate(key, newValue))
+          unit <- Utils.tryTillSuccess(aggregates.update(key, newValue))
         } yield unit
       }
     } yield ExitCode.Success

@@ -16,14 +16,14 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike
 object Main extends IOApp {
 
   def run(args: List[String]) = {  
-    val aggregates = new Aerospike.DB(Config.Aerospike.client, Config.Aerospike.config)
+    val db = new Aerospike.DB(Config.Aerospike.client, Config.Aerospike.config)
 
     val consumer = new KafkaConsumer[Nothing, UserTag](Config.Kafka.getConsumerProps)
     consumer.subscribe(Collections.singletonList(Config.Kafka.TOPIC))
 
     val tagsToAggregate = new KafkaTopic.Subscriber(consumer)
     
-    AggregateProcessorServer.stream[IO](aggregates, tagsToAggregate).compile.drain.as(ExitCode.Success)
+    AggregateProcessorServer.stream[IO](db.Aggregates, tagsToAggregate).compile.drain.as(ExitCode.Success)
   }
 }
 

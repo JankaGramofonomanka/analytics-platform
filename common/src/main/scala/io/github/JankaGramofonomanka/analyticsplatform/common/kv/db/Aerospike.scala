@@ -10,7 +10,7 @@ import com.aerospike.client.policy.{Policy, WritePolicy}
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCodec
 
 
@@ -28,7 +28,7 @@ object Aerospike {
   
   
 
-  class DB(client: AerospikeClient, config: Config) extends ProfilesDB[IO] with AggregatesDB[IO] {
+  class DB(client: AerospikeClient, config: Config) {
 
     private val codec = AerospikeCodec
 
@@ -58,34 +58,34 @@ object Aerospike {
       Try(client.operate(policy, key, operation)).isSuccess
     }
 
-    def getProfile(cookie: Cookie): IO[TrackGen[SimpleProfile]] = {
-      for {
-        bytes <- getBytes(cookie.value, config.profileBinName)
-        profile <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeProfile(r)))
-      } yield profile
-    }.value.map(_.getOrElse(TrackGen.default[SimpleProfile](SimpleProfile.default)))
+    object Profiles extends KeyValueDB[IO, Cookie, SimpleProfile] {
+      def get(cookie: Cookie): IO[TrackGen[SimpleProfile]] = {
+        for {
+          bytes <- getBytes(cookie.value, config.profileBinName)
+          profile <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeProfile(r)))
+        } yield profile
+      }.value.map(_.getOrElse(TrackGen.default[SimpleProfile](SimpleProfile.default)))
 
-    def updateProfile(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean] = {
-      val bin = new Bin(config.profileBinName, codec.encodeProfile(profile.value))
-      putBin(cookie.value, bin, profile.generation)
+      def update(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean] = {
+        val bin = new Bin(config.profileBinName, codec.encodeProfile(profile.value))
+        putBin(cookie.value, bin, profile.generation)
+      }
     }
+    
 
-    def getAggregate(key: AggregateKey): IO[TrackGen[AggregateValue]] = {
-      for {
-        bytes <- getBytes(codec.encodeAggregateKey(key), config.aggregateBinName)
-        value <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeAggregateValue(r)))
-      } yield value
-    }.value.map(_.getOrElse(TrackGen.default(AggregateValue.default)))
+    object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateValue] {
+      def get(key: AggregateKey): IO[TrackGen[AggregateValue]] = {
+        for {
+          bytes <- getBytes(codec.encodeAggregateKey(key), config.aggregateBinName)
+          value <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeAggregateValue(r)))
+        } yield value
+      }.value.map(_.getOrElse(TrackGen.default(AggregateValue.default)))
 
-    def updateAggregate(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean] = {
-      val bin = new Bin(config.aggregateBinName, codec.encodeAggregateValue(value.value))
-      putBin(codec.encodeAggregateKey(key), bin, value.generation)
+      def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean] = {
+        val bin = new Bin(config.aggregateBinName, codec.encodeAggregateValue(value.value))
+        putBin(codec.encodeAggregateKey(key), bin, value.generation)
+      }  
     }
-
   }
-  
-
-
-
 }
 

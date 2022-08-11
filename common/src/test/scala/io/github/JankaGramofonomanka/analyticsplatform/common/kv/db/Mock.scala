@@ -5,12 +5,12 @@ import scala.collection.mutable.Map
 import cats.effect._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.{ProfilesDB, AggregatesDB}
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
 
 class Mock(
   private val profiles:   Map[Cookie, TrackGen[SimpleProfile]],
   private val aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
-) extends ProfilesDB[IO] with AggregatesDB[IO] {
+) {
 
   private def tryUpdate[K, V](key: K, value: TrackGen[V], map: Map[K, TrackGen[V]]): IO[Boolean]
 
@@ -34,17 +34,24 @@ class Mock(
       }
     }
 
-  def getProfile(cookie: Cookie): IO[TrackGen[SimpleProfile]]
-    = IO.delay { profiles.get(cookie).getOrElse(TrackGen.default(SimpleProfile.default)) }
+  object Profiles extends KeyValueDB[IO, Cookie, SimpleProfile] {
+    
+    def get(cookie: Cookie): IO[TrackGen[SimpleProfile]]
+      = IO.delay { profiles.get(cookie).getOrElse(TrackGen.default(SimpleProfile.default)) }
 
-  def updateProfile(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean]
-    = tryUpdate(cookie, profile, profiles)
+    def update(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean]
+      = tryUpdate(cookie, profile, profiles)
 
-  def getAggregate(key: AggregateKey): IO[TrackGen[AggregateValue]]
-    = IO.delay { aggregates.get(key).getOrElse(TrackGen.default(AggregateValue.default)) }
+  }
   
-  def updateAggregate(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean]
-    = tryUpdate(key, value, aggregates)
+  object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateValue] {
+    
+    def get(key: AggregateKey): IO[TrackGen[AggregateValue]]
+      = IO.delay { aggregates.get(key).getOrElse(TrackGen.default(AggregateValue.default)) }
+    
+    def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean]
+      = tryUpdate(key, value, aggregates)  
+  }
 }
 
 object Mock {

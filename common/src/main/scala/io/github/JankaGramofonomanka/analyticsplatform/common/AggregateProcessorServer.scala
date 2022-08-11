@@ -6,14 +6,14 @@ import fs2.Stream
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.AggregateProcessorOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.AggregatesDB
+import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
 
 
 
 object AggregateProcessorServer {
 
   def stream[F[_]: Async](
-    aggregates:       AggregatesDB[F],
+    aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
     tagsToAggregate:  Topic.Subscriber[F, UserTag],
   ): Stream[F, Nothing] = {
     

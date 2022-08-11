@@ -19,6 +19,11 @@ object Main extends IOApp {
     
     val tagsToAggregate = new KafkaTopic.Publisher(producer, Config.Kafka.TOPIC)
 
-    FrontendServer.stream[IO](db, db, tagsToAggregate, IOEntityCodec).compile.drain.as(ExitCode.Success)
+    FrontendServer.stream[IO](
+      db.Profiles,
+      db.Aggregates,
+      tagsToAggregate,
+      IOEntityCodec
+    ).compile.drain.as(ExitCode.Success)
   }
 }
