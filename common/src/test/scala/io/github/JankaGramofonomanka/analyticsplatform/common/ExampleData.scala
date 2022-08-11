@@ -98,7 +98,8 @@ object ExampleData {
     // Examples from the task specification
 
 
-    val timestampJson = json""""2022-03-22T12:15:00.000Z""""
+    val timestampJson1 = json""""2022-03-22T12:15:00.000Z""""
+    val timestampJson2 = json""""2022-03-22T12:15:00Z""""
     val timestamp = Timestamp(LocalDateTime.parse("2022-03-22T12:15:00.000"))
 
     val datetimeJson1 = json""""2022-03-22T12:15:00.000""""

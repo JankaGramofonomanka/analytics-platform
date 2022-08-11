@@ -12,6 +12,15 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 
 object Data {
+
+  private object DateFormat {
+    val seconds     = "yyyy-MM-dd'T'HH:mm:ss"
+    val millis      = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    val secondsZ    = s"$seconds'Z'"
+    val millisZ     = s"$millis'Z'"
+    val optMillisZ  = s"$seconds[.SSS]'Z'"
+  }
+
   final case class Cookie(value: String) extends AnyVal
 
   final case class Timestamp(value: LocalDateTime) extends AnyVal {
@@ -24,12 +33,13 @@ object Data {
   }
   object Timestamp {
     def parse(s: String): Either[String, Timestamp]
-      = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s, formatter)))
+      = Either.catchNonFatal(Timestamp(LocalDateTime.parse(s, parseFormatter)))
         .leftMap(err => cannotParseWithMsg("timestamp", err.getMessage))
 
-    def encode(ts: Timestamp): String = ts.value.format(formatter)
+    def encode(ts: Timestamp): String = ts.value.format(printFormatter)
 
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private val printFormatter = DateTimeFormatter.ofPattern(DateFormat.millisZ)
+    private val parseFormatter = DateTimeFormatter.ofPattern(DateFormat.optMillisZ)
   }
 
   // TODO how to enforce rounding of `value` on bucket creation?
@@ -53,7 +63,7 @@ object Data {
 
     def encode(b: Bucket): String = b.value.format(formatter)
 
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+    private val formatter = DateTimeFormatter.ofPattern(DateFormat.seconds)
   }
 
   type DateTime = LocalDateTime
@@ -66,7 +76,7 @@ object Data {
 
     def getBucket(dt: DateTime): Bucket = Bucket(Utils.roundToMinutes(dt))
     
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private val formatter = DateTimeFormatter.ofPattern(DateFormat.millis)
   }
 
   final case class TimeRange(from: DateTime, to: DateTime) {
