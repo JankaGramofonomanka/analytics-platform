@@ -19,7 +19,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 object Config {
 
   object Other {
-    val numTagsToKeep = 200
+    val numTagsToKeep = Utils.getEnvVarInt("NUM_TAGS_TO_KEEP")
   }
 
   object QueryParams {
@@ -31,7 +31,7 @@ object Config {
     val brandId     = "brand_id"
     val categoryId  = "category_id"
 
-    val defaultLimit = 200
+    val defaultLimit = Utils.getEnvVarInt("DEFAULT_LIMIT")
   }
 
   object Aggregates {
@@ -53,7 +53,7 @@ object Config {
   object Aerospike {
     
     private val HOSTNAME = Utils.getEnvVar("AEROSPIKE_HOSTNAME")
-    private val PORT: Int = Utils.getEnvVar("AEROSPIKE_PORT").toInt
+    private val PORT: Int = Utils.getEnvVarInt("AEROSPIKE_PORT")
     
     private val writePolicy = new WritePolicy()
     writePolicy.generationPolicy = EXPECT_GEN_EQUAL
@@ -76,9 +76,10 @@ object Config {
 
     val TOPIC = Utils.getEnvVar("KAFKA_TOPIC")
     private val BOOTSTRAP_SERVERS = Utils.getEnvVar("KAFKA_BOOTSTRAP_SERVERS")
-    private val GROUP = Utils.getEnvVar("KAFKA_GROUP")
+    private val GROUP_ID = Utils.getEnvVar("KAFKA_GROUP")
+    private val CLIENT_ID = Utils.getEnvVar("KAFKA_CONSUMER_ID")
     
-    val pollTimeoutMillis: Long = 100
+    val pollTimeoutMillis: Long = Utils.getEnvVarInt("KAFKA_POLL_TIMEOUT").toLong
     
     def getProducerProps: Properties = {
       val props = new Properties()
@@ -96,7 +97,8 @@ object Config {
       
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   classOf[StringDeserializer])
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[UserTagDeserializer])
-      props.put(ConsumerConfig.GROUP_ID_CONFIG,                 GROUP)
+      props.put(ConsumerConfig.GROUP_ID_CONFIG,                 GROUP_ID)
+      props.put(ConsumerConfig.CLIENT_ID_CONFIG,                CLIENT_ID)
 
       props
     }
@@ -104,8 +106,9 @@ object Config {
 
   object Frontend {
     
-    val host = ipv4"0.0.0.0"
-    val port = Port.fromString(Utils.getEnvVar("FRONTEND_PORT"))
+    val host = Ipv4Address.fromString(Utils.getEnvVar("FRONTEND_HOSTNAME"))
+      .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse hostname"))
+    val port = Port.fromInt(Utils.getEnvVarInt("FRONTEND_PORT"))
       .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse port"))
   }
 }

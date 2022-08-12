@@ -1,5 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
+import scala.util.{Try, Success, Failure}
+
 import cats._
 import cats.implicits._
 
@@ -17,6 +19,14 @@ object Utils {
 
   def getEnvVar(varName: String): String
     = sys.env.get(varName).getOrElse(throw new NoEnvironmentVariableException(varName))
+  
+  def getEnvVarInt(varName: String): Int = {
+    val str = getEnvVar(varName)
+    Try(str.toInt) match {
+      case Success(i) => i
+      case Failure(_) => throw new InvalidEnvironmentVariableException(s"variable `$varName` is not an integer")
+    }
+  }
 
   final case class NoEnvironmentVariableException(varName: String)
   extends Exception(s"Undefined environment variable `$varName`", None.orNull)
