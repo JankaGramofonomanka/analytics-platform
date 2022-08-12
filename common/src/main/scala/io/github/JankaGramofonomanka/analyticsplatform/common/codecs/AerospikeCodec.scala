@@ -17,13 +17,12 @@ object AerospikeCodec {
   def decodeProfile(bytes: Array[Byte]): Option[SimpleProfile]
     = decodeJson[SimpleProfile](bytes)
 
-  def encodeProfile(profile: SimpleProfile): Array[Byte] = profile.asJson.noSpaces.toString.getBytes
+  def encodeProfile(profile: SimpleProfile): Array[Byte] = profile.asJson.noSpaces.getBytes
 
-  def encodeAggregateKey(key: AggregateKey): String = key.asJson.noSpaces.toString
+  def encodeAggregateKey(key: AggregateKey): String = key.asJson.noSpaces
 
   def encodeAggregateValue(aggregateValue: AggregateValue): Array[Byte]
-    = aggregateValue.asJson.noSpaces.toString.getBytes
-    
+    = aggregateValue.asJson.noSpaces.getBytes
   
   def decodeAggregateValue(bytes: Array[Byte]): Option[AggregateValue]
     = decodeJson[AggregateValue](bytes)
