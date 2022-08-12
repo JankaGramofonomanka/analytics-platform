@@ -26,6 +26,8 @@ lazy val commonSettings = Seq(
 
     Libs.kafkaClient,
 
+    Libs.snappy,
+
     Libs.svmSubs,
 
     Libs.scalatest,

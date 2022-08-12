@@ -28,6 +28,8 @@ object Dependencies {
     val aerospikeClient     = "com.aerospike"       % "aerospike-client"      % V.aerospike
 
     val kafkaClient         = "org.apache.kafka"    % "kafka-clients"         % V.kafka
+
+    val snappy              = "org.xerial.snappy"   % "snappy-java"           % "1.1.8.4"
     
     val svmSubs             = "org.scalameta"       %% "svm-subs"             % "20.2.0"
 
