@@ -2,7 +2,6 @@ package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import scala.util.Try
 
-import cats.data.OptionT
 import cats.effect.IO
 
 import com.aerospike.client.{AerospikeClient, Key, Record, Bin, Operation}
@@ -34,36 +33,44 @@ object Aerospike {
 
     private def mkKey(setName: SetName, key: String): Key = new Key(Config.namespace.value, setName.value, key)
 
-    private def getRecord(setName: SetName, keyS: String): IO[Option[Record]] = {
+    
+    private def getRecord(setName: SetName, keyS: String): IO[TrackGenT[Option, Record]] = {
       val key = mkKey(setName, keyS)
       for {
         record <- IO.delay(client.get(client.readPolicyDefault, key))
-      } yield Utils.checkForNull(record)
+        optRecord = Utils.checkForNull(record)
+        generation = optRecord.map(_.generation).getOrElse(Generation.default)
+      } yield TrackGenT(TrackGen(optRecord, generation))
     }
 
-    private def getBytes(setName: SetName, key: String, binName: BinName): OptionT[IO, TrackGen[Array[Byte]]]
+    private def getBytes(setName: SetName, key: String, binName: BinName): IO[TrackGenT[Option, Array[Byte]]]
       = for {
-        record <- OptionT(getRecord(setName, key))
-        obj <- OptionT.fromOption[IO](Utils.checkForNull(record.getValue(binName.value)))
-      } yield TrackGen(obj.asInstanceOf[Array[Byte]], record.generation)
-    
+          record <- getRecord(setName, key)
+      } yield for {
+        record <- record
+        obj <- Utils.checkForNull(record.getValue(binName.value))
+      } yield obj.asInstanceOf[Array[Byte]]
+
 
     private def putBin(setName: SetName, keyS: String, bin: Bin, generation: Int): IO[Boolean] = IO.delay {
       val key = mkKey(setName, keyS)
 
       val policy = client.writePolicyDefault
       policy.generation = generation
-      val operation = Operation.put(bin)
-      Try(client.operate(policy, key, operation)).isSuccess
+
+      Try(client.operate(policy, key, Operation.put(bin))).isSuccess
     }
 
+
+
     object Profiles extends KeyValueDB[IO, Cookie, SimpleProfile] {
-      def get(cookie: Cookie): IO[TrackGen[SimpleProfile]] = {
-        for {
-          bytes <- getBytes(Config.profilesSetName, cookie.value, Config.profileBinName)
-          profile <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeProfile(r)))
-        } yield profile
-      }.value.map(_.getOrElse(TrackGen.default[SimpleProfile](SimpleProfile.default)))
+      
+      def get(cookie: Cookie): IO[TrackGen[SimpleProfile]] = for {
+        
+        bytes <- getBytes(Config.profilesSetName, cookie.value, Config.profileBinName)
+        decoded = bytes.flatMap(bytes => codec.decodeProfile(bytes)).value
+
+      } yield decoded.map(_.getOrElse(SimpleProfile.default))
 
       def update(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean] = {
         val bin = new Bin(Config.profileBinName.value, codec.encodeProfile(profile.value))
@@ -71,13 +78,16 @@ object Aerospike {
       }
     }
     
+
+    
     object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateValue] {
-      def get(key: AggregateKey): IO[TrackGen[AggregateValue]] = {
-        for {
-          bytes <- getBytes(Config.aggregatesSetName, codec.encodeAggregateKey(key), Config.aggregateBinName)
-          value <- OptionT.fromOption[IO](bytes.traverse(r => codec.decodeAggregateValue(r)))
-        } yield value
-      }.value.map(_.getOrElse(TrackGen.default(AggregateValue.default)))
+
+      def get(key: AggregateKey): IO[TrackGen[AggregateValue]] = for {
+        
+        bytes <- getBytes(Config.aggregatesSetName, codec.encodeAggregateKey(key), Config.aggregateBinName)
+        decoded = bytes.flatMap(bytes => codec.decodeAggregateValue(bytes)).value
+
+      } yield decoded.map(_.getOrElse(AggregateValue.default))
 
       def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean] = {
         val bin = new Bin(Config.aggregateBinName.value, codec.encodeAggregateValue(value.value))

@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit
 import cats._
 import cats.syntax.functor._
 import cats.syntax.either._
+import cats.syntax.flatMap._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
@@ -299,6 +300,15 @@ object Data {
     def default[T](value: T): TrackGen[T] = TrackGen(value, 0)
   }
 
+  final case class TrackGenT[F[_], T](value: TrackGen[F[T]]) {
+    def map[TT](f: T => TT)(implicit ev: Functor[F]) = TrackGenT(value.map[F[TT]](_.map(f)))
+    def flatMap[TT](f: T => F[TT])(implicit ev: FlatMap[F]) = TrackGenT(value.map[F[TT]](_.flatMap(f)))
+  }
+
+  object TrackGenT {
+    def default[F[_], T](value: F[T]) = TrackGenT(TrackGen.default(value))
+  }
+  
 
 
 }
