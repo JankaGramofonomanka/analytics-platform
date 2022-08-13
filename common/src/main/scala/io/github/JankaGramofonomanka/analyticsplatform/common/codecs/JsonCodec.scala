@@ -12,7 +12,8 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 object JsonCodec {
 
   
-  implicit val config: Configuration = Configuration.default.withSnakeCaseMemberNames
+
+  implicit val codecConfig: Configuration = Configuration.default.withSnakeCaseMemberNames
 
   implicit val cookieDecoder: Decoder[Cookie] = Decoder.decodeString.emap { s => Right(Cookie(s)) }
   implicit val cookieEncoder: Encoder[Cookie] = Encoder.encodeString.contramap[Cookie](_.value)
@@ -76,25 +77,26 @@ object JsonCodec {
   implicit val prettyProfileEncoder:  Encoder[PrettyProfile]  = deriveConfiguredEncoder[PrettyProfile]
 
 
+  private val aggregatesFieldNames = Config.Aggregates.Fields
   implicit val aggregatesEncoder = new Encoder[Aggregates] {
     final def apply(aggregates: Aggregates): Json = Json.obj(
-      (Config.Aggregates.Fields.columns,  mkColumns(aggregates.fields)),
-      (Config.Aggregates.Fields.rows,     mkRows(aggregates)),
+      (aggregatesFieldNames.columns,  mkColumns(aggregates.fields)),
+      (aggregatesFieldNames.rows,     mkRows(aggregates)),
     )
   }
 
   private def mkColumns(fields: AggregateFields): Json = {
 
-    val mOriginCol      = fields.origin     .map(_ => Config.Aggregates.Fields.origin)
-    val mBrandIdCol     = fields.brandId    .map(_ => Config.Aggregates.Fields.brandId)
-    val mCategoryIdCol  = fields.categoryId .map(_ => Config.Aggregates.Fields.categoryId)
+    val mOriginCol      = fields.origin     .map(_ => aggregatesFieldNames.origin)
+    val mBrandIdCol     = fields.brandId    .map(_ => aggregatesFieldNames.brandId)
+    val mCategoryIdCol  = fields.categoryId .map(_ => aggregatesFieldNames.categoryId)
     
-    val mSumPriceCol  = if (fields.sumPrice)  Some(Config.Aggregates.Fields.sumPrice) else None
-    val mCountCol     = if (fields.count)     Some(Config.Aggregates.Fields.count)    else None
+    val mSumPriceCol  = if (fields.sumPrice)  Some(aggregatesFieldNames.sumPrice) else None
+    val mCountCol     = if (fields.count)     Some(aggregatesFieldNames.count)    else None
     
     val columns = Vector(
-      Some(Config.Aggregates.Fields.bucket),
-      Some(Config.Aggregates.Fields.action),
+      Some(aggregatesFieldNames.bucket),
+      Some(aggregatesFieldNames.action),
       mOriginCol,
       mBrandIdCol,
       mCategoryIdCol,

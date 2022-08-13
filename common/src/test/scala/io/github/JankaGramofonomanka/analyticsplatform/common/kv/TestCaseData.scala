@@ -2,7 +2,7 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.kv
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
-import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils
 
 object TestCaseData {
   object Case1 {
@@ -34,7 +34,7 @@ object TestCaseData {
     val fieldsWO  = fieldsAll.copy(brandId = Some(Case1.brandWO))
     
 
-    val timeRange = getTimeRangeContaining(bucket.toTimestamp)
+    val timeRange = TestUtils.getTimeRangeContaining(bucket.toTimestamp)
 
     val expectedAggregateValueAll = AggregateValue(3, priceRS + priceWO1 + priceWO2)
     val expectedAggregateValueRS = AggregateValue(1, priceRS)
@@ -50,7 +50,7 @@ object TestCaseData {
     val tag2 = ExampleData.userTag.copy(cookie = cookie2)
 
     
-    val timeRange = getTimeRangeContaining(tag1.time)
+    val timeRange = TestUtils.getTimeRangeContaining(tag1.time)
     
   }
 }

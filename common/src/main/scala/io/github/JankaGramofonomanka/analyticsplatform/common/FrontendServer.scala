@@ -9,6 +9,7 @@ import org.http4s.server.middleware.Logger
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
+import io.github.JankaGramofonomanka.analyticsplatform.common.Environment
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.Routes
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.KeyValueDB
@@ -22,17 +23,13 @@ object FrontendServer {
     profiles:         KeyValueDB[F, Cookie, SimpleProfile],
     aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
     tagsToAggregate:  Topic.Publisher[F, UserTag],
-    codec: EntityCodec[F]
+  )(implicit
+    env: Environment,
+    entityCodec: EntityCodec[F]
   ): Stream[F, Nothing] = {
     val ops = new FrontendOps[F](profiles, aggregates, tagsToAggregate)
 
-    // Combine Service Routes into an HttpApp.
-    // Can also be done via a Router if you
-    // want to extract segments not checked
-    // in the underlying routes.
-    val httpApp = (
-      Routes.kvRoutes(ops, codec)
-    ).orNotFound
+    val httpApp = (Routes.kvRoutes(ops)).orNotFound
 
     // With Middlewares in place
     val finalHttpApp = Logger.httpApp(true, true)(httpApp)
@@ -40,8 +37,8 @@ object FrontendServer {
     for {
       exitCode <- Stream.resource[F, ExitCode](
         EmberServerBuilder.default[F]
-          .withHost(Config.Frontend.host)
-          .withPort(Config.Frontend.port)
+          .withHost(Config.Frontend.getHost)
+          .withPort(Config.Frontend.getPort)
           .withHttpApp(finalHttpApp)
           .build >>
         Resource.eval(Async[F].never)

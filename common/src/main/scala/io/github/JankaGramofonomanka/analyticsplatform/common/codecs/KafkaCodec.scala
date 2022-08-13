@@ -9,8 +9,7 @@ import org.apache.kafka.common.errors.SerializationException
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec._
 
-object Kafka {
-  
+object KafkaCodec {
   
   class UserTagSerializer extends Serializer[UserTag] {
 

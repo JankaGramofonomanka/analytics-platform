@@ -12,9 +12,10 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.JsonCodec._
 
 object AerospikeCodec {
 
+
   private def decodeJson[A: Decoder](bytes: Array[Byte]): Option[A] = {
-    // TODO propagate the error?
     val str = new String(uncompress(bytes))
+    // TODO propagate the error?
     decode[A](str).toOption
   }
 

@@ -84,7 +84,7 @@ class BasicDataTransformationsSpec extends AnyFreeSpec {
     val updated = profile.update(ExampleData.userTag, tagsToKeep)
 
     "added tag remains in the profile"  in assert(updated.tags.contains(ExampleData.userTag))
-    "limited number of tags is kept"    in assert(updated.tags.length <= Config.Other.numTagsToKeep)
+    "limited number of tags is kept"    in assert(updated.tags.length <= tagsToKeep)
     "tags are sorted after update"      in {
       val sorted: Seq[UserTag] => Boolean = Utils.isSortedWith((tag1, tag2) => !tag1.time.isBefore(tag2.time))
       assert(sorted(updated.tags))

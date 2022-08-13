@@ -3,18 +3,22 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 import org.scalatest.freespec.AnyFreeSpec
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils
 import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCodec
 
 
-
 class AerospikeCodecSpec extends AnyFreeSpec {
+
+  implicit val env = TestUtils.mockEnv
+
+  val codec = AerospikeCodec
   
   "\"decode . encode is id\"" - {
     "`Profile`" in {
         
         val profile = ExampleData.simpleProfile
-        val bytes = AerospikeCodec.encodeProfile(profile)
-        val decoded = AerospikeCodec.decodeProfile(bytes)
+        val bytes = codec.encodeProfile(profile)
+        val decoded = codec.decodeProfile(bytes)
 
         assert(Some(profile) == decoded)
 
@@ -22,8 +26,8 @@ class AerospikeCodecSpec extends AnyFreeSpec {
     "`AggregateValue`" in {
 
         val value = ExampleData.aggregateValue
-        val bytes = AerospikeCodec.encodeAggregateValue(value)
-        val decoded = AerospikeCodec.decodeAggregateValue(bytes)
+        val bytes = codec.encodeAggregateValue(value)
+        val decoded = codec.decodeAggregateValue(bytes)
 
         assert(Some(value) == decoded)
         

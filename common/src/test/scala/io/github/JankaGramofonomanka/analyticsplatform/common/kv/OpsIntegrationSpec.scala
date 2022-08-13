@@ -6,17 +6,16 @@ import cats.effect.unsafe.implicits.global
 import org.scalatest.freespec.AnyFreeSpec
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.TestCaseData._
 
 class OpsIntegrationSpec extends AnyFreeSpec {
   
-
   "case 1" - {
-    val storage = Storage.empty
-    val interface = getMocks(storage)
+    val storage = TestUtils.Storage.empty
+    val interface = TestUtils.getMocks(storage)
 
-    val (frontend, proc) = getOps[IO](interface)
+    val (frontend, proc) = TestUtils.getOps[IO](interface)
 
     val computation: IO[(PrettyProfile, Aggregates, Aggregates, Aggregates)] = for {
       _ <- frontend.storeTag(Case1.tagRS)
@@ -62,10 +61,10 @@ class OpsIntegrationSpec extends AnyFreeSpec {
   }
 
   "case 2" - {
-    val storage = Storage.empty
-    val interface = getMocks(storage)
+    val storage = TestUtils.Storage.empty
+    val interface = TestUtils.getMocks(storage)
 
-    val (frontend, _) = getOps[IO](interface)
+    val (frontend, _) = TestUtils.getOps[IO](interface)
 
     val computation: IO[(SimpleProfile, SimpleProfile)] = for {
       _ <- frontend.storeTag(Case2.tag1)

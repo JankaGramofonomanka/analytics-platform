@@ -4,7 +4,7 @@ import cats.effect.Sync
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Query._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.QueryCodec._
 
 object Routes {
 

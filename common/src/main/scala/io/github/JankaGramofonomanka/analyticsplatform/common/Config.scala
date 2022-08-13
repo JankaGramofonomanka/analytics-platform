@@ -13,25 +13,23 @@ import com.aerospike.client.policy.GenerationPolicy._
 import com.aerospike.client.AerospikeClient
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike.{Config => AerospikeConfig}
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Kafka._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.KafkaCodec._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
+import io.github.JankaGramofonomanka.analyticsplatform.common.Environment
 
 object Config {
 
-  object Other {
-    val numTagsToKeep = Utils.getEnvVarInt("NUM_TAGS_TO_KEEP")
-  }
+  object Query {
 
-  object QueryParams {
-    val limit       = "limit"
-    val timeRange   = "time_range"
-    val action      = "action"
-    val aggregates  = "aggregates"
-    val origin      = "origin"
-    val brandId     = "brand_id"
-    val categoryId  = "category_id"
-
-    val defaultLimit = Utils.getEnvVarInt("DEFAULT_LIMIT")
+    object ParamNames {
+      val limit       = "limit"
+      val timeRange   = "time_range"
+      val action      = "action"
+      val aggregates  = "aggregates"
+      val origin      = "origin"
+      val brandId     = "brand_id"
+      val categoryId  = "category_id"
+    }
   }
 
   object Aggregates {
@@ -49,41 +47,36 @@ object Config {
       val count       = "count"
     }
   }
-    
-  object Aerospike {
-    
-    private val HOSTNAME = Utils.getEnvVar("AEROSPIKE_HOSTNAME")
-    private val PORT: Int = Utils.getEnvVarInt("AEROSPIKE_PORT")
-    
-    private val writePolicy = new WritePolicy()
-    writePolicy.generationPolicy = EXPECT_GEN_EQUAL
 
-    // TODO specify policies
-    val config = AerospikeConfig(
-      new Policy(),
-      writePolicy,
-      "analyticsplatform",
-      "profiles",
-      "aggregates",
-      "profile",
-      "aggregate",
-    )
-    val client = new AerospikeClient(HOSTNAME, PORT)
+  object Aerospike {
+    def getConfig: AerospikeConfig = {
+    
+      val writePolicy = new WritePolicy()
+      writePolicy.generationPolicy = EXPECT_GEN_EQUAL
+
+      // TODO specify policies
+      AerospikeConfig(
+        new Policy(),
+        writePolicy,
+        "analyticsplatform",
+        "profiles",
+        "aggregates",
+        "profile",
+        "aggregate",
+      )
+      
+    }
+
+    def getClient(implicit env: Environment)
+      = new AerospikeClient(env.AEROSPIKE_HOSTNAME, env.AEROSPIKE_PORT)
 
   }
-
+  
   object Kafka {
 
-    val TOPIC = Utils.getEnvVar("KAFKA_TOPIC")
-    private val BOOTSTRAP_SERVERS = Utils.getEnvVar("KAFKA_BOOTSTRAP_SERVERS")
-    private val GROUP_ID = Utils.getEnvVar("KAFKA_GROUP")
-    private val CLIENT_ID = Utils.getEnvVar("KAFKA_CONSUMER_ID")
-    
-    val pollTimeoutMillis: Long = Utils.getEnvVarInt("KAFKA_POLL_TIMEOUT").toLong
-    
-    def getProducerProps: Properties = {
+    def getProducerProps(implicit env: Environment): Properties = {
       val props = new Properties()
-      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
+      props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, env.KAFKA_BOOTSTRAP_SERVERS)
   
       props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   classOf[StringSerializer])
       props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[UserTagSerializer])
@@ -91,14 +84,14 @@ object Config {
       props
     }
 
-    def getConsumerProps: Properties = {
+    def getConsumerProps(implicit env: Environment): Properties = {
       val props = new Properties()
-      props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS)
+      props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, env.KAFKA_BOOTSTRAP_SERVERS)
       
       props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,   classOf[StringDeserializer])
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[UserTagDeserializer])
-      props.put(ConsumerConfig.GROUP_ID_CONFIG,                 GROUP_ID)
-      props.put(ConsumerConfig.CLIENT_ID_CONFIG,                CLIENT_ID)
+      props.put(ConsumerConfig.GROUP_ID_CONFIG,                 env.KAFKA_GROUP_ID)
+      props.put(ConsumerConfig.CLIENT_ID_CONFIG,                env.KAFKA_CLIENT_ID)
 
       props
     }
@@ -106,9 +99,14 @@ object Config {
 
   object Frontend {
     
-    val host = Ipv4Address.fromString(Utils.getEnvVar("FRONTEND_HOSTNAME"))
-      .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse hostname"))
-    val port = Port.fromInt(Utils.getEnvVarInt("FRONTEND_PORT"))
-      .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse port"))
+    def getHost(implicit env: Environment): Ipv4Address
+      = Ipv4Address.fromString(env.FRONTEND_HOSTNAME)
+        .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse hostname"))
+    
+    def getPort(implicit env: Environment): Port
+      = Port.fromInt(env.FRONTEND_PORT)
+        .getOrElse(throw new Utils.InvalidEnvironmentVariableException("Could not parse port"))
   }
 }
+
+

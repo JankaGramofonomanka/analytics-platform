@@ -9,17 +9,22 @@ import org.apache.kafka.clients.consumer._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.AggregateProcessorServer
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
+import io.github.JankaGramofonomanka.analyticsplatform.common.Environment
+import io.github.JankaGramofonomanka.analyticsplatform.common.ActualEnvironment
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.KafkaTopic
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.db.Aerospike
 
 
 object Main extends IOApp {
 
-  def run(args: List[String]) = {  
-    val db = new Aerospike.DB(Config.Aerospike.client, Config.Aerospike.config)
+  def run(args: List[String]) = {
+
+    implicit val env: Environment = ActualEnvironment
+    
+    val db = new Aerospike.DB(Config.Aerospike.getClient, Config.Aerospike.getConfig)
 
     val consumer = new KafkaConsumer[Nothing, UserTag](Config.Kafka.getConsumerProps)
-    consumer.subscribe(Collections.singletonList(Config.Kafka.TOPIC))
+    consumer.subscribe(Collections.singletonList(env.KAFKA_TOPIC))
 
     val tagsToAggregate = new KafkaTopic.Subscriber(consumer)
     

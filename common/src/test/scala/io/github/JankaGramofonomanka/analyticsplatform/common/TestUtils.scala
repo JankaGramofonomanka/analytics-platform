@@ -13,6 +13,25 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.kv.topic.{Mock => 
 
 
 object TestUtils {
+
+  val mockEnv: Environment = new Environment {
+    val NUM_TAGS_TO_KEEP  = 200
+    val DEFAULT_LIMIT     = 200
+
+    val AEROSPIKE_HOSTNAME  = "localhost"
+    val AEROSPIKE_PORT      = 3000
+
+    val KAFKA_TOPIC             = "topic"
+    val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
+    val KAFKA_GROUP_ID          = "kafka-group"
+    val KAFKA_CLIENT_ID         = "kafka-client"
+    
+    val KAFKA_POLL_TIMEOUT_MILLIS = 1
+
+    val FRONTEND_HOSTNAME = "localhost"
+    val FRONTEND_PORT     = 8080
+  }
+
   final case class Storage(
     profiles:   Map[Cookie, TrackGen[SimpleProfile]],
     aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
@@ -37,6 +56,7 @@ object TestUtils {
   }
 
   def getOps[F[_]: Sync](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {
+    implicit val env = mockEnv
     val frontend            = new FrontendOps[F](interface.profiles, interface.aggregates, interface.publisher)
     val aggregateProcessor  = new AggregateProcessorOps[F](interface.aggregates, interface.subscriber)
     (frontend, aggregateProcessor)

@@ -16,6 +16,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCo
 
 object Aerospike {
 
+  // TODO replace this with `common.Config.Aerospike`
   final case class Config(
     readPolicy: Policy,
     writePolicy: WritePolicy,

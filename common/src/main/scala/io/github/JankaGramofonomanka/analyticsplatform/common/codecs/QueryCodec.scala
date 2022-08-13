@@ -7,9 +7,9 @@ import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.ErrorMessages._
-import io.github.JankaGramofonomanka.analyticsplatform.common.Config.QueryParams
+import io.github.JankaGramofonomanka.analyticsplatform.common.Config.Query.ParamNames
 
-object Query {
+object QueryCodec {
   
   object CookieVar {
     def unapply(value: String): Option[Cookie] = Some(Cookie(value))
@@ -19,11 +19,11 @@ object Query {
   implicit val limitDecoder: QueryParamDecoder[Limit] = { param =>
     Validated
       .catchNonFatal(param.value.toInt)
-      .leftMap(t => ParseFailure(failedToDecodeParameter(QueryParams.limit), t.getMessage))
+      .leftMap(t => ParseFailure(failedToDecodeParameter(ParamNames.limit), t.getMessage))
       .toValidatedNel
   }
 
-  object OptLimitMatcher extends OptionalQueryParamDecoderMatcher[Limit](name = QueryParams.limit)
+  object OptLimitMatcher extends OptionalQueryParamDecoderMatcher[Limit](name = ParamNames.limit)
 
   
   
@@ -31,12 +31,12 @@ object Query {
   // TimeRange ----------------------------------------------------------------
   implicit val timeRangeDecoder: QueryParamDecoder[TimeRange] = { param =>
     TimeRange.parse(param.value)
-      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(QueryParams.timeRange), s))
+      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(ParamNames.timeRange), s))
       .toValidatedNel
     
   }
 
-  object TimeRangeMatcher extends QueryParamDecoderMatcher[TimeRange](name = QueryParams.timeRange)
+  object TimeRangeMatcher extends QueryParamDecoderMatcher[TimeRange](name = ParamNames.timeRange)
 
 
 
@@ -44,11 +44,11 @@ object Query {
   // Action -------------------------------------------------------------------
   implicit val actionDecoder: QueryParamDecoder[Action] = { param =>
     Action.parse(param.value)
-      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(QueryParams.action), s))
+      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(ParamNames.action), s))
       .toValidatedNel
   }
 
-  object ActionMatcher extends QueryParamDecoderMatcher[Action](name = QueryParams.action)
+  object ActionMatcher extends QueryParamDecoderMatcher[Action](name = ParamNames.action)
 
 
 
@@ -56,22 +56,22 @@ object Query {
   // Aggregates ---------------------------------------------------------------
   implicit val aggregateDecoder: QueryParamDecoder[Aggregate] = { param =>
     Aggregate.parse(param.value)
-      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(QueryParams.aggregates), s))
+      .toValidated.leftMap(s => ParseFailure(failedToDecodeParameter(ParamNames.aggregates), s))
       .toValidatedNel
   }
 
-  object AggregatesMatcher extends OptionalMultiQueryParamDecoderMatcher[Aggregate](name = QueryParams.aggregates)
+  object AggregatesMatcher extends OptionalMultiQueryParamDecoderMatcher[Aggregate](name = ParamNames.aggregates)
 
 
   // Origin -------------------------------------------------------------------
   implicit val originDecoder: QueryParamDecoder[Origin] = { param => Validated.Valid(Origin(param.value)) }
-  object OptOriginMatcher extends OptionalQueryParamDecoderMatcher[Origin](name = QueryParams.origin)
+  object OptOriginMatcher extends OptionalQueryParamDecoderMatcher[Origin](name = ParamNames.origin)
 
   // BrandId ------------------------------------------------------------------
   implicit val brandIdDecoder: QueryParamDecoder[BrandId] = { param => Validated.Valid(BrandId(param.value)) }
-  object OptBrandIdMatcher extends OptionalQueryParamDecoderMatcher[BrandId](name = QueryParams.brandId)
+  object OptBrandIdMatcher extends OptionalQueryParamDecoderMatcher[BrandId](name = ParamNames.brandId)
 
   // CategoryId ---------------------------------------------------------------
   implicit val categoryIdDecoder: QueryParamDecoder[CategoryId] = { param => Validated.Valid(CategoryId(param.value)) }
-  object OptCategoryIdMatcher extends OptionalQueryParamDecoderMatcher[CategoryId](name = QueryParams.categoryId)
+  object OptCategoryIdMatcher extends OptionalQueryParamDecoderMatcher[CategoryId](name = ParamNames.categoryId)
 }

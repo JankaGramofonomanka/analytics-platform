@@ -3,12 +3,14 @@ package io.github.JankaGramofonomanka.analyticsplatform.common.codecs
 import org.scalatest.freespec.AnyFreeSpec
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
-import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.Kafka._
+import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.KafkaCodec._
 
 
 
 class KafkaCodecSpec extends AnyFreeSpec {
+
   "decode . encode is id" in {
+
     val ser = new UserTagSerializer
     val des = new UserTagDeserializer
 

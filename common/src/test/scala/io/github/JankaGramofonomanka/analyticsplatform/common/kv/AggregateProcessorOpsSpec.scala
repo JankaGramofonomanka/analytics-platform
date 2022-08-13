@@ -5,7 +5,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 
-import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils
 import io.github.JankaGramofonomanka.analyticsplatform.common.kv.TestCaseData._
 
 
@@ -13,10 +13,10 @@ class AggregateProcessorOpsSpec extends AnyFreeSpec {
 
   "`AggregateProcessorOps.processTags`" - {
     
-    val storage = Storage.empty
-    val interface = getMocks(storage)
+    val storage = TestUtils.Storage.empty
+    val interface = TestUtils.getMocks(storage)
 
-    val (_, proc) = getOps[IO](interface)
+    val (_, proc) = TestUtils.getOps[IO](interface)
 
     storage.queue.addOne(Case1.tagRS)
     storage.queue.addOne(Case1.tagWO1)

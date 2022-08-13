@@ -7,9 +7,8 @@ import cats.effect.unsafe.implicits.global
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.ExampleData
-import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
-import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils._
+import io.github.JankaGramofonomanka.analyticsplatform.common.TestUtils
 
 
 
@@ -18,10 +17,10 @@ class FrontendOpsSpec extends AnyFreeSpec {
   "`FrontendOps.storeTag`" - {
 
     {
-      val storage = Storage.empty
-      val interface = getMocks(storage)
+      val storage = TestUtils.Storage.empty
+      val interface = TestUtils.getMocks(storage)
 
-      val (frontend, _) = getOps[IO](interface)
+      val (frontend, _) = TestUtils.getOps[IO](interface)
 
       val tag = ExampleData.userTag
       frontend.storeTag(tag).unsafeRunSync()
@@ -42,10 +41,10 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
   "`FrontendOps.getProfile`" - {
 
-    val storage = Storage.empty
-    val interface = getMocks(storage)
+    val storage = TestUtils.Storage.empty
+    val interface = TestUtils.getMocks(storage)
 
-    val (frontend, _) = getOps[IO](interface)
+    val (frontend, _) = TestUtils.getOps[IO](interface)
 
     "returns empty profile when the profile is not stored" in {
       val returned = frontend
@@ -61,8 +60,8 @@ class FrontendOpsSpec extends AnyFreeSpec {
       val profile = SimpleProfile(Vector(tag))
       storage.profiles.put(tag.cookie, TrackGen.default(profile))
 
-      val timeRange = getTimeRangeContaining(tag.time)
-      val limit     = Config.Other.numTagsToKeep
+      val timeRange = TestUtils.getTimeRangeContaining(tag.time)
+      val limit     = 20
       
       val expected  = profile.prettify(tag.cookie)
       val actual    = frontend.getProfile(tag.cookie, timeRange, limit).unsafeRunSync()
@@ -86,7 +85,7 @@ class FrontendOpsSpec extends AnyFreeSpec {
       val profile = SimpleProfile(Vector(included, excluded))
       storage.profiles.put(cookie, TrackGen.default(profile))
 
-      val limit     = Config.Other.numTagsToKeep
+      val limit = 20
       
       val returned = frontend.getProfile(cookie, timeRange, limit).unsafeRunSync()
       
@@ -121,10 +120,10 @@ class FrontendOpsSpec extends AnyFreeSpec {
   }
 
   "`FrontendOps.getAggregates`" - {
-    val storage = Storage.empty
-    val interface = getMocks(storage)
+    val storage = TestUtils.Storage.empty
+    val interface = TestUtils.getMocks(storage)
 
-    val (frontend, _) = getOps[IO](interface)
+    val (frontend, _) = TestUtils.getOps[IO](interface)
 
     val fields  = ExampleData.aggregateFields
     val key     = AggregateKey.fromFields(ExampleData.bucket, fields)
