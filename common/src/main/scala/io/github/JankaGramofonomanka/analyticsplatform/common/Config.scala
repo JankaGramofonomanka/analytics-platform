@@ -1,7 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
 
-import com.aerospike.client.policy.{Policy, WritePolicy}
+import com.aerospike.client.policy.{ClientPolicy, WritePolicy}
 import com.aerospike.client.policy.GenerationPolicy._
 import com.aerospike.client.AerospikeClient
 
@@ -51,13 +51,8 @@ object Config {
   object Aerospike {
     def getConfig: AerospikeConfig = {
     
-      val writePolicy = new WritePolicy()
-      writePolicy.generationPolicy = EXPECT_GEN_EQUAL
-
       // TODO specify policies
       AerospikeConfig(
-        new Policy(),
-        writePolicy,
         "analyticsplatform",
         "profiles",
         "aggregates",
@@ -67,8 +62,16 @@ object Config {
       
     }
 
-    def getClient(implicit env: Environment)
-      = new AerospikeClient(env.AEROSPIKE_HOSTNAME, env.AEROSPIKE_PORT)
+    def getClient(implicit env: Environment) = {
+      val clientPolicy = new ClientPolicy()
+
+      val writePolicy = new WritePolicy()
+      writePolicy.generationPolicy = EXPECT_GEN_EQUAL
+      clientPolicy.writePolicyDefault = writePolicy
+
+      new AerospikeClient(clientPolicy, env.AEROSPIKE_HOSTNAME, env.AEROSPIKE_PORT)
+    }
+      
 
   }
   

@@ -6,7 +6,6 @@ import cats.data.OptionT
 import cats.effect.IO
 
 import com.aerospike.client.{AerospikeClient, Key, Record, Bin, Operation}
-import com.aerospike.client.policy.{Policy, WritePolicy}
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
@@ -19,8 +18,6 @@ object Aerospike {
   // TODO create case classes `Namespace`, `SetName` and `Key`
   // TODO replace this with `common.Config.Aerospike`
   final case class Config(
-    readPolicy: Policy,
-    writePolicy: WritePolicy,
     namespace: String,
     profilesSetName: String,
     aggregatesSetName: String,
@@ -39,7 +36,7 @@ object Aerospike {
     private def getRecord(setName: String, keyS: String): IO[Option[Record]] = {
       val key = mkKey(setName, keyS)
       for {
-        record <- IO.delay(client.get(config.readPolicy, key))
+        record <- IO.delay(client.get(client.readPolicyDefault, key))
       } yield Utils.checkForNull(record)
     }
 
@@ -53,8 +50,7 @@ object Aerospike {
     private def putBin(setName: String, keyS: String, bin: Bin, generation: Int): IO[Boolean] = IO.delay {
       val key = mkKey(setName, keyS)
 
-      // TODO get policy from client
-      val policy = config.writePolicy
+      val policy = client.writePolicyDefault
       policy.generation = generation
       val operation = Operation.put(bin)
       Try(client.operate(policy, key, operation)).isSuccess
