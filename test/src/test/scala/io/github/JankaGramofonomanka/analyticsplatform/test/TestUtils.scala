@@ -25,6 +25,12 @@ object TestUtils {
     val AEROSPIKE_HOSTNAME  = "localhost"
     val AEROSPIKE_PORT      = 3000
 
+    val AEROSPIKE_NAMESPACE       = "analyticsplatform"
+    val AEROSPIKE_PROFILES_SET    = "profiles"
+    val AEROSPIKE_AGGREGATES_SET  = "aggregates"
+    val AEROSPIKE_PROFILES_BIN    = "profile"
+    val AEROSPIKE_AGGREGATES_BIN  = "aggregate"
+
     val KAFKA_TOPIC             = "topic"
     val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
     val KAFKA_GROUP_ID          = "kafka-group"

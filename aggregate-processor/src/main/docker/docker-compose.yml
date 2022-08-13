@@ -7,9 +7,20 @@ services:
       dockerfile: ./frontend/src/main/docker/Dockerfile
     image: jankagramofonomanka/analytics-platform-aggregate-processor
     container_name: aggregate-processor
+    network_mode: host
     environment:
+
       AEROSPIKE_HOSTNAME: ${AEROSPIKE_HOSTNAME}
       AEROSPIKE_PORT: 3000
+      AEROSPIKE_NAMESPACE: analyticsplatform
+      AEROSPIKE_PROFILES_SET: profiles
+      AEROSPIKE_AGGREGATES_SET: aggregates
+      AEROSPIKE_PROFILES_BIN: profile
+      AEROSPIKE_AGGREGATES_BIN: aggregate
+
       KAFKA_TOPIC: tags-to-aggregate
       KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-      KAFKA_GROUP: ${KAFKA_GROUP}
+      KAFKA_GROUP: aggregate-processors
+      KAFKA_CONSUMER_ID: ${KAFKA_CONSUMER_ID}
+      KAFKA_POLL_TIMEOUT: 1000
+

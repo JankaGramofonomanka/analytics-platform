@@ -20,7 +20,7 @@ object Main extends IOApp {
 
     implicit val env: Config.Environment = new Config.ActualEnvironment
     
-    val db = new Aerospike.DB(Config.Common.Aerospike.getClient, Config.Common.Aerospike.getConfig)
+    val db = new Aerospike.DB(Config.Common.Aerospike.getClient)
 
     val consumer = new KafkaConsumer[Nothing, UserTag](Config.Kafka.getConsumerProps)
     consumer.subscribe(Collections.singletonList(env.KAFKA_TOPIC))

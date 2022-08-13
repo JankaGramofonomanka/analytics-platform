@@ -53,11 +53,22 @@ services:
       - 8080:8080
     network_mode: host
     environment:
+
+      NUM_TAGS_TO_KEEP: 200
+      DEFAULT_LIMIT: 200
+
       AEROSPIKE_HOSTNAME: localhost
       AEROSPIKE_PORT: 3000
+      AEROSPIKE_NAMESPACE: analyticsplatform
+      AEROSPIKE_PROFILES_SET: profiles
+      AEROSPIKE_AGGREGATES_SET: aggregates
+      AEROSPIKE_PROFILES_BIN: profile
+      AEROSPIKE_AGGREGATES_BIN: aggregate
+
       KAFKA_TOPIC: tags-to-aggregate
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-      KAFKA_GROUP: aggregate-processors
+
+      FRONTEND_HOSTNAME: 0.0.0.0
       FRONTEND_PORT: 8080
   
   aggregate-processor:
@@ -71,9 +82,17 @@ services:
       - aerospike
     network_mode: host
     environment:
+      
       AEROSPIKE_HOSTNAME: localhost
       AEROSPIKE_PORT: 3000
+      AEROSPIKE_NAMESPACE: analyticsplatform
+      AEROSPIKE_PROFILES_SET: profiles
+      AEROSPIKE_AGGREGATES_SET: aggregates
+      AEROSPIKE_PROFILES_BIN: profile
+      AEROSPIKE_AGGREGATES_BIN: aggregate
+
       KAFKA_TOPIC: tags-to-aggregate
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
       KAFKA_GROUP: aggregate-processors
-      FRONTEND_PORT: 8081
+      KAFKA_CONSUMER_ID: consumer
+      KAFKA_POLL_TIMEOUT: 1000

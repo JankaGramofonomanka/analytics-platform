@@ -16,13 +16,11 @@ object Main extends IOApp {
 
     implicit val env: Config.Environment = new Config.ActualEnvironment
 
-
-    val db = new Aerospike.DB(Config.Common.Aerospike.getClient, Config.Common.Aerospike.getConfig)
+    val db = new Aerospike.DB(Config.Common.Aerospike.getClient)
     
     val producer = new KafkaProducer[Nothing, UserTag](Config.Kafka.getProducerProps)
     
     val tagsToAggregate = new KafkaPublisher(producer, env.KAFKA_TOPIC)
-
 
     implicit val codec = IOEntityCodec
     Server.stream[IO](
