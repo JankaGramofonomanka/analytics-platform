@@ -12,27 +12,20 @@ lazy val commonSettings = Seq(
 
   libraryDependencies ++= Seq(
 
-    Libs.http4sEmberServer,
-    Libs.http4sEmberClient,
-    Libs.http4sCirce,
-    Libs.http4sDSL,
-    
+    Libs.catsCore,
+    Libs.catsEffect,
+
     Libs.circeGeneric,
     Libs.circeLiteral,
     Libs.circeGenericExtras,
     Libs.circeParser,
 
     Libs.aerospikeClient,
-
     Libs.kafkaClient,
 
+    Libs.fs2,
     Libs.snappy,
-
     Libs.svmSubs,
-
-    Libs.scalatest,
-    Libs.munit,
-    Libs.munitCatsEffect3,
     Libs.logback,
     
   ),
@@ -54,6 +47,13 @@ lazy val frontend = (project in file("frontend"))
   .settings(commonSettings)
   .settings(
     name := "frontend", 
+
+    libraryDependencies ++= Seq(
+      Libs.http4sEmberServer,
+      Libs.http4sEmberClient,
+      Libs.http4sCirce,
+      Libs.http4sDSL,
+    ),
   )
   .dependsOn(common)
 
@@ -68,6 +68,17 @@ lazy val common = (project in file("common"))
   .settings(commonSettings)
   .settings(
     name := "common",
-    
   )
+
+lazy val test = (project in file("test"))
+  .settings(commonSettings)
+  .settings(
+    name := "test",
+
+    libraryDependencies ++= Seq(
+      Libs.scalatest,
+    ),
+  )
+  .dependsOn(frontend, aggregateProcessor)
+
 

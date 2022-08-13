@@ -3,7 +3,10 @@ import sbt._
 object Dependencies {
 
   object V {
-    
+
+    val catsCore    = "2.8.0"
+    val catsEffect  = "3.3.14"
+    val fs2         = "3.2.12"
     val http4s      = "0.23.12"
     val circe       = "0.14.2"
     val aerospike   = "5.1.8"
@@ -14,6 +17,11 @@ object Dependencies {
   }
 
   object Libs {
+
+    val catsCore            = "org.typelevel"       %% "cats-core"            % V.catsCore
+    val catsEffect          = "org.typelevel"       %% "cats-effect"          % V.catsEffect
+    
+    val fs2                 = "co.fs2"              %% "fs2-core"             % V.fs2
 
     val http4sEmberServer   = "org.http4s"          %% "http4s-ember-server"  % V.http4s
     val http4sEmberClient   = "org.http4s"          %% "http4s-ember-client"  % V.http4s
