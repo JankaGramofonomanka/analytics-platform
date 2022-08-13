@@ -6,6 +6,7 @@ import com.aerospike.client.policy.GenerationPolicy._
 import com.aerospike.client.AerospikeClient
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Aerospike.{Config => AerospikeConfig}
+import io.github.JankaGramofonomanka.analyticsplatform.common.Aerospike.{Namespace, SetName, BinName}
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 
 object Config {
@@ -51,13 +52,12 @@ object Config {
   object Aerospike {
     def getConfig: AerospikeConfig = {
     
-      // TODO specify policies
       AerospikeConfig(
-        "analyticsplatform",
-        "profiles",
-        "aggregates",
-        "profile",
-        "aggregate",
+        Namespace("analyticsplatform"),
+        SetName("profiles"),
+        SetName("aggregates"),
+        BinName("profile"),
+        BinName("aggregate"),
       )
       
     }
