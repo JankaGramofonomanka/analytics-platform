@@ -24,6 +24,8 @@ object Routes {
 
     HttpRoutes.of[F] {
 
+      case GET -> Root / "health" => Ok()
+
       case  req @ POST -> Root / "user_tags"
         => (req.as[UserTag] flatMap ops.storeTag _) *> NoContent()
     
