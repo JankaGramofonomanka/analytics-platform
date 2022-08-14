@@ -81,4 +81,22 @@ lazy val test = (project in file("test"))
   )
   .dependsOn(frontend, aggregateProcessor)
 
+lazy val echo = (project in file("echo"))
+  .settings(
+    organization := "io.github.JankaGramofonomanka",
+    name := "analytics-platform",
+    version := "0.0.1-SNAPSHOT",
+    scalaVersion := "2.13.8",
 
+    scalacOptions ++= Seq(
+      "-Ymacro-annotations",
+    ),
+
+    libraryDependencies ++= Seq(
+      Libs.http4sEmberServer,
+      Libs.http4sEmberClient,
+      Libs.http4sCirce,
+      Libs.http4sDSL,
+      Libs.logback,
+    ),
+  )
