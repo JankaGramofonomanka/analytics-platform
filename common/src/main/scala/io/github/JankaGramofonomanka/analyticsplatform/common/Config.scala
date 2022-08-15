@@ -26,19 +26,53 @@ object Config {
 
   class ActualEnvironment extends Environment {
 
-    val AEROSPIKE_HOSTNAME        = Utils.getEnvVar("AEROSPIKE_HOSTNAME")
-    val AEROSPIKE_PORT            = Utils.getEnvVarInt("AEROSPIKE_PORT")
-    val AEROSPIKE_NAMESPACE       = Utils.getEnvVar("AEROSPIKE_NAMESPACE")
-    val AEROSPIKE_PROFILES_SET    = Utils.getEnvVar("AEROSPIKE_PROFILES_SET")
-    val AEROSPIKE_AGGREGATES_SET  = Utils.getEnvVar("AEROSPIKE_AGGREGATES_SET")
-    val AEROSPIKE_PROFILES_BIN    = Utils.getEnvVar("AEROSPIKE_PROFILES_BIN")
-    val AEROSPIKE_AGGREGATES_BIN  = Utils.getEnvVar("AEROSPIKE_AGGREGATES_BIN")
+    val AEROSPIKE_HOSTNAME        = Utils
+                                      .getEnvVarOption("AEROSPIKE_HOSTNAME")
+                                      .getOrElse(Defaults.AEROSPIKE_HOSTNAME)
+    val AEROSPIKE_PORT            = Utils
+                                      .getEnvVarOptionInt("AEROSPIKE_PORT")
+                                      .getOrElse(Defaults.AEROSPIKE_PORT)
+    val AEROSPIKE_NAMESPACE       = Utils
+                                      .getEnvVarOption("AEROSPIKE_NAMESPACE")
+                                      .getOrElse(Defaults.AEROSPIKE_NAMESPACE)
+    val AEROSPIKE_PROFILES_SET    = Utils
+                                      .getEnvVarOption("AEROSPIKE_PROFILES_SET")
+                                      .getOrElse(Defaults.AEROSPIKE_PROFILES_SET)
+    val AEROSPIKE_AGGREGATES_SET  = Utils
+                                      .getEnvVarOption("AEROSPIKE_AGGREGATES_SET")
+                                      .getOrElse(Defaults.AEROSPIKE_AGGREGATES_SET)
+    val AEROSPIKE_PROFILES_BIN    = Utils
+                                      .getEnvVarOption("AEROSPIKE_PROFILES_BIN")
+                                      .getOrElse(Defaults.AEROSPIKE_PROFILES_BIN)
+    val AEROSPIKE_AGGREGATES_BIN  = Utils
+                                      .getEnvVarOption("AEROSPIKE_AGGREGATES_BIN")
+                                      .getOrElse(Defaults.AEROSPIKE_AGGREGATES_BIN)
 
     
-    val KAFKA_TOPIC               = Utils.getEnvVar("KAFKA_TOPIC")
-    val KAFKA_BOOTSTRAP_SERVERS   = Utils.getEnvVar("KAFKA_BOOTSTRAP_SERVERS")
+    val KAFKA_TOPIC               = Utils
+                                      .getEnvVarOption("KAFKA_TOPIC")
+                                      .getOrElse(Defaults.KAFKA_TOPIC)
+    val KAFKA_BOOTSTRAP_SERVERS   = Utils
+                                      .getEnvVarOption("KAFKA_BOOTSTRAP_SERVERS")
+                                      .getOrElse(Defaults.KAFKA_BOOTSTRAP_SERVERS)
+
+
+    private object Defaults {
+      val AEROSPIKE_HOSTNAME        = "localhost"
+      val AEROSPIKE_PORT            = 3000
+      val AEROSPIKE_NAMESPACE       = "analyticsplatform"
+      val AEROSPIKE_PROFILES_SET    = "profiles"
+      val AEROSPIKE_AGGREGATES_SET  = "aggregates"
+      val AEROSPIKE_PROFILES_BIN    = "profile"
+      val AEROSPIKE_AGGREGATES_BIN  = "aggregate"
+
+      val KAFKA_TOPIC               = "tags-to-aggregate"
+      val KAFKA_BOOTSTRAP_SERVERS   = "localhost:9092"
+    }
+
     
   }
+
 
 
 

@@ -24,9 +24,22 @@ object Config {
 
   class ActualEnvironment extends Common.ActualEnvironment with Environment {
 
-    val KAFKA_GROUP_ID            = Utils.getEnvVar("KAFKA_GROUP")
-    val KAFKA_CLIENT_ID           = Utils.getEnvVar("KAFKA_CONSUMER_ID")
-    val KAFKA_POLL_TIMEOUT_MILLIS = Utils.getEnvVarInt("KAFKA_POLL_TIMEOUT").toLong
+    val KAFKA_GROUP_ID            = Utils
+                                      .getEnvVarOption("KAFKA_GROUP")
+                                      .getOrElse(Defaults.KAFKA_GROUP_ID)
+    val KAFKA_CLIENT_ID           = Utils
+                                      .getEnvVarOption("KAFKA_CONSUMER_ID")
+                                      .getOrElse(Defaults.KAFKA_CLIENT_ID)
+    val KAFKA_POLL_TIMEOUT_MILLIS = Utils
+                                      .getEnvVarOptionInt("KAFKA_POLL_TIMEOUT")
+                                      .getOrElse(Defaults.KAFKA_POLL_TIMEOUT_MILLIS)
+                                      .toLong
+
+    private object Defaults {
+      val KAFKA_GROUP_ID            = "aggregate-processors"
+      val KAFKA_CLIENT_ID           = "consumer"
+      val KAFKA_POLL_TIMEOUT_MILLIS = 1000
+    }
     
   }
 

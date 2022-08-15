@@ -24,20 +24,33 @@ object Config {
     val FRONTEND_HOSTNAME:  String
     val FRONTEND_PORT:      Int
 
-    val USE_LOGGER: Boolean
+    val USE_LOGGER:   Boolean
+    val LOG_HEADERS:  Boolean
+    val LOG_BODY:     Boolean
   }
 
   class ActualEnvironment extends Common.ActualEnvironment with Environment {
 
-    val NUM_TAGS_TO_KEEP  = Utils.getEnvVarInt("NUM_TAGS_TO_KEEP")
-    val DEFAULT_LIMIT     = Utils.getEnvVarInt("DEFAULT_LIMIT")
+    val NUM_TAGS_TO_KEEP  = Utils.getEnvVarOptionInt("NUM_TAGS_TO_KEEP").getOrElse(Defaults.NUM_TAGS_TO_KEEP)
+    val DEFAULT_LIMIT     = Utils.getEnvVarOptionInt("DEFAULT_LIMIT")   .getOrElse(Defaults.DEFAULT_LIMIT)
     
-    val FRONTEND_HOSTNAME = Utils.getEnvVar("FRONTEND_HOSTNAME")
-    val FRONTEND_PORT     = Utils.getEnvVarInt("FRONTEND_PORT")
+    val FRONTEND_HOSTNAME = Utils.getEnvVarOption("FRONTEND_HOSTNAME").getOrElse(Defaults.FRONTEND_HOSTNAME)
+    val FRONTEND_PORT     = Utils.getEnvVarOptionInt("FRONTEND_PORT") .getOrElse(Defaults.FRONTEND_PORT)
 
-    val USE_LOGGER        = Utils.getEnvVar("USE_LOGGER").toUpperCase match {
-      case "TRUE" => true
-      case _      => false
+    val USE_LOGGER        = Utils.getEnvVarBoolean("USE_LOGGER",  Defaults.USE_LOGGER)
+    val LOG_HEADERS       = Utils.getEnvVarBoolean("LOG_HEADERS", Defaults.LOG_HEADERS)
+    val LOG_BODY          = Utils.getEnvVarBoolean("LOG_BODY",    Defaults.LOG_BODY)
+
+    private object Defaults {
+      val NUM_TAGS_TO_KEEP  = 200
+      val DEFAULT_LIMIT     = 200
+      
+      val FRONTEND_HOSTNAME = "0.0.0.0"
+      val FRONTEND_PORT     = 8080
+
+      val USE_LOGGER        = true
+      val LOG_HEADERS       = false
+      val LOG_BODY          = false
     }
   }
 

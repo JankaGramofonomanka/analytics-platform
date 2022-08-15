@@ -31,7 +31,7 @@ object Server {
     val httpApp = (Routes.routes(ops)).orNotFound
 
     // With Middlewares in place
-    val finalHttpApp = if (env.USE_LOGGER) Logger.httpApp(true, true)(httpApp) else httpApp
+    val finalHttpApp = if (env.USE_LOGGER) Logger.httpApp(env.LOG_HEADERS, env.LOG_BODY)(httpApp) else httpApp
     
     for {
       exitCode <- Stream.resource[F, ExitCode](

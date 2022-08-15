@@ -17,16 +17,29 @@ object Utils {
 
   def pure[F[_]: Monad, A](x: A): F[A] = implicitly[Monad[F]].pure(x)
 
+  def getEnvVarOption(varName: String): Option[String] = sys.env.get(varName)
+  
   def getEnvVar(varName: String): String
     = sys.env.get(varName).getOrElse(throw new NoEnvironmentVariableException(varName))
   
-  def getEnvVarInt(varName: String): Int = {
-    val str = getEnvVar(varName)
+  def getEnvVarOptionInt(varName: String): Option[Int] = getEnvVarOption(varName).map { str => 
+    
     Try(str.toInt) match {
       case Success(i) => i
-      case Failure(_) => throw new InvalidEnvironmentVariableException(s"variable `$varName` is not an integer")
+      case Failure(_) => throw new InvalidEnvironmentVariableException(
+                                    s"value `$str` of variable `$varName` is not an integer")
     }
   }
+
+  def getEnvVarInt(varName: String): Int
+    = getEnvVarOptionInt(varName).getOrElse(throw new NoEnvironmentVariableException(varName))
+
+  def getEnvVarBoolean(varName: String, default: Boolean): Boolean
+    = sys.env.getOrElse(varName, "").toUpperCase match {
+      case "TRUE"   => true
+      case "FALSE"  => false
+      case _ => default
+    }
 
   final case class NoEnvironmentVariableException(varName: String)
   extends Exception(s"Undefined environment variable `$varName`", None.orNull)

@@ -40,6 +40,10 @@ object TestUtils {
 
     val FRONTEND_HOSTNAME = "localhost"
     val FRONTEND_PORT     = 8080
+
+    val USE_LOGGER  = true
+    val LOG_HEADERS = false
+    val LOG_BODY    = false
   }
 
   final case class Storage(
