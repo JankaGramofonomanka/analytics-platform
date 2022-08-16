@@ -4,3 +4,4 @@
 target/
 .toignore/
 .idea/
+.env

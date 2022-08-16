@@ -2,10 +2,7 @@ version: '3'
 
 services:
   frontend:
-    build:
-      context: ../../../../
-      dockerfile: ./frontend/src/main/docker/Dockerfile
-    image: jankagramofonomanka/analytics-platform-frontend
+    image: ${DOCKER_USERNAME}/analytics-platform-frontend
     container_name: frontend
     ports:
       - 8080:8080

@@ -2,10 +2,7 @@ version: '3'
 
 services:
   frontend:
-    build:
-      context: ../../../../
-      dockerfile: ./frontend/src/main/docker/Dockerfile
-    image: jankagramofonomanka/analytics-platform-aggregate-processor
+    image: ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
     container_name: aggregate-processor
     network_mode: host
     environment:
