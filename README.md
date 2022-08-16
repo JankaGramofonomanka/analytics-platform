@@ -166,6 +166,34 @@ DOCKER_USERNAME=<your-docker-username>
     docker-compose up
     ```
 
+- run the app remotely with multiple replicas
+  
+  - To replicate aggregate-processor, just run more of them
+    You might want to give each aggregate-processor a unique consumer id.
+    To do that modify the field `KAFKA_CONSUMER_ID` in `docker-compose.yaml`.
+  
+  - To replicate frontend, you will need a loadbalancer.
+    To build a loadbalancer, you need to manually add server addresses at which your frontend replicas are availible to  `loadbalancer/src/main/resources/haproxy.cfg`, you can find instructions on how to do that there.
+
+    Next, build and push a docker image of the loadbalancer:
+    ```
+    docker build . \
+      -t ${DOCKER_USERNAME}/analytics-platform-loadbalancer \
+      -f loadbalancer/src/main/docker/Dockerfile
+    
+    docker push ${DOCKER_USERNAME}/analytics-platform-loadbalancer
+    ```
+
+    Next on your remote loadbalancer machine pull the image and run it:
+    ```
+    docker pull ${DOCKER_USERNAME}/analytics-platform-loadbalancer:latest
+    docker run --network=host --privileged ${DOCKER_USERNAME}/analytics-platform-loadbalancer
+
+    ```
+
+    Now you can run frontends on the addresses you specified in `loadbalancer/src/main/resources/haproxy.cfg`,
+    and direct requests to `<LOADBALANCER-HOST>:8080`
+
 ### Environment
 
 The app uses the following environment variables:

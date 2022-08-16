@@ -1,0 +1,7 @@
+version: '3'
+services:
+  loadbalancer:
+    image: ${DOCKER_USERNAME}/analytics-platform-loadbalancer
+    network_mode: host
+    privileged: true
+    container_name: loadbalancer
