@@ -60,12 +60,7 @@ It receives requests, queries the **database** to compute and return the answer 
 To build and use the docker images you will need to specify your docker username.
 ie. run this (both locally and on remote machines if relevant):
 ```
-exprt DOCKER_USERNAME=<your-docker-username>
-```
-
-Or create an `.env` file and with the following line
-```
-DOCKER_USERNAME=<your-docker-username>
+export DOCKER_USERNAME=<your-docker-username>
 ```
 
 - build the images
@@ -86,12 +81,6 @@ DOCKER_USERNAME=<your-docker-username>
 - run the app locally
   ```
   docker-compose up
-  ```
-
-  create a topic:
-  ```
-  docker exec -it local-broker bash
-  [appuser@broker ~]$ kafka-topics --bootstrap-server localhost:9092 --topic tags-to-aggregate --create --partitions 10
   ```
 
 - run the app remotely
@@ -131,7 +120,7 @@ DOCKER_USERNAME=<your-docker-username>
   - On your remote database machine:
     ```
     cd <PATH>
-    docker-compose up
+    sudo docker-compose up
     ```
 
   - On remote kafka machines:
@@ -139,7 +128,7 @@ DOCKER_USERNAME=<your-docker-username>
     run kafka:
     ```
     cd <PATH>
-    docker-compose up
+    sudo docker-compose up
     ```
 
     create a topic:
@@ -153,8 +142,8 @@ DOCKER_USERNAME=<your-docker-username>
     pull and run the image
     ```
     cd <PATH>
-    docker pull ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
-    docker-compose up
+    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-frontend:latest
+    sudo docker-compose up
     ```
 
   - On your remote aggregate-processor machine:
@@ -162,8 +151,8 @@ DOCKER_USERNAME=<your-docker-username>
     pull and run the image
     ```
     cd <PATH>
-    docker pull ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
-    docker-compose up
+    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-aggregate-processor:latest
+    sudo docker-compose up
     ```
 
 - run the app remotely with multiple replicas
@@ -186,8 +175,8 @@ DOCKER_USERNAME=<your-docker-username>
 
     Next on your remote loadbalancer machine pull the image and run it:
     ```
-    docker pull ${DOCKER_USERNAME}/analytics-platform-loadbalancer:latest
-    docker run --network=host --privileged ${DOCKER_USERNAME}/analytics-platform-loadbalancer
+    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-loadbalancer:latest
+    docker run --network=host --privileged <YOUR-DOCKER-USERNAME>/analytics-platform-loadbalancer
 
     ```
 

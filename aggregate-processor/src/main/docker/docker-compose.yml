@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  frontend:
+  aggregate-processor:
     image: ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
     container_name: aggregate-processor
     network_mode: host

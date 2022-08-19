@@ -31,6 +31,11 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
+    
+    command: sh -c "((sleep 15 && kafka-topics --bootstrap-server localhost:9092 --topic tags-to-aggregate --create --partitions 10)&) && /etc/confluent/docker/run "
+    
+    
+  
   
   aerospike:
     image: aerospike/aerospike-server
