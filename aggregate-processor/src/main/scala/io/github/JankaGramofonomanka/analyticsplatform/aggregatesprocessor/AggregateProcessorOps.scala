@@ -20,16 +20,18 @@ class AggregateProcessorOps[F[_]: Sync](
     val keys = AggregateKey.fromTag(tag)
 
     for {
-      _ <- keys.traverse { key =>
-        for {
-          value <- aggregates.get(key)
-          
-          newValue = value.map(_.update(tag.productInfo.price))
-          unit <- Utils.tryTillSuccess(aggregates.update(key, newValue))
-        } yield unit
+      _ <- keys.traverse { key => Utils.tryTillSuccess {
+
+          for {
+            value <- aggregates.get(key)
+            newValue = value.map(_.update(tag.productInfo.price))
+            
+            result <- aggregates.update(key, newValue)
+          } yield result
+        }
+
       }
     } yield ExitCode.Success
-    
   }
 
   def processTags: Stream[F, ExitCode] = for {

@@ -84,7 +84,6 @@ object Data {
     def contains(ts: Timestamp): Boolean
       = (!from.isAfter(ts.value)) && ts.value.isBefore(to)
 
-    // TODO is `Vector` ok?
     def getBuckets: Vector[Bucket] = {
 
       val numBuckets = ChronoUnit.MINUTES.between(from, to)
