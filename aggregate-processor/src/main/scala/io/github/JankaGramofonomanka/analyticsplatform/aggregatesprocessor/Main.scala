@@ -1,5 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
 
+import scala.concurrent.ExecutionContext
 import cats.effect.{ExitCode, IO, IOApp}
 
 import java.util.Collections
@@ -18,6 +19,7 @@ object Main extends IOApp {
 
   def run(args: List[String]) = {
 
+    implicit val ec = ExecutionContext.global
     implicit val env: Config.Environment = new Config.ActualEnvironment
     
     val db = new Aerospike.DB(Config.Common.Aerospike.getClient)

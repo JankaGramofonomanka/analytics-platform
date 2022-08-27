@@ -25,16 +25,18 @@ object TestUtils {
     val AEROSPIKE_HOSTNAME  = "localhost"
     val AEROSPIKE_PORT      = 3000
 
-    val AEROSPIKE_NAMESPACE       = "analyticsplatform"
-    val AEROSPIKE_PROFILES_SET    = "profiles"
-    val AEROSPIKE_AGGREGATES_SET  = "aggregates"
-    val AEROSPIKE_PROFILES_BIN    = "profile"
-    val AEROSPIKE_AGGREGATES_BIN  = "aggregate"
+    val AEROSPIKE_PROFILES_NAMESPACE    = "profiles"
+    val AEROSPIKE_AGGREGATES_NAMESPACE  = "aggregates"
+    val AEROSPIKE_PROFILES_BIN          = ""
+    val AEROSPIKE_AGGREGATES_BIN        = ""
+    val AEROSPIKE_COMMIT_LEVEL          = "ALL"
+    val AEROSPIKE_GENERATION_POLICY     = "EQ"
 
     val KAFKA_TOPIC             = "topic"
     val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
     val KAFKA_GROUP_ID          = "kafka-group"
     val KAFKA_CLIENT_ID         = "kafka-client"
+    val KAFKA_MAX_POLL_RECORDS  = 500
     
     val KAFKA_POLL_TIMEOUT_MILLIS = 1
 
@@ -69,7 +71,7 @@ object TestUtils {
     StorageInterface(db.Profiles, db.Aggregates, topic.Publisher, topic.Subscriber)
   }
 
-  def getOps[F[_]: Sync](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {
+  def getOps[F[_]: Async](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {
     implicit val env = MockEnv
     val frontend            = new FrontendOps[F](interface.profiles, interface.aggregates, interface.publisher)
     val aggregateProcessor  = new AggregateProcessorOps[F](interface.aggregates, interface.subscriber)

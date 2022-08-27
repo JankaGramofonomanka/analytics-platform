@@ -51,7 +51,7 @@ class JsonCodecSpec extends AnyFreeSpec {
     "`UserTag`"         in testJson[UserTag]        (General.userTag)
     "`SimpleProfile`"   in testJson[SimpleProfile]  (General.simpleProfile)
     "`PrettyProfile`"   in testJson[PrettyProfile]  (General.prettyProfile)
-    "`AggregateKey`"    in testJson[AggregateKey]   (General.aggregateKey)
+    //"`AggregateKey`"    in testJson[AggregateKey]   (General.aggregateKey)
     "`AggregateValue`"  in testJson[AggregateValue] (General.aggregateValue)
   }
 

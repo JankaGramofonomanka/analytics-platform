@@ -16,10 +16,11 @@ object Config {
 
   trait Environment extends Common.Environment {
 
-    val KAFKA_GROUP_ID:           String
-    val KAFKA_CLIENT_ID:          String
-    val KAFKA_POLL_TIMEOUT_MILLIS: Long
-
+    val KAFKA_GROUP_ID:             String
+    val KAFKA_CLIENT_ID:            String
+    val KAFKA_POLL_TIMEOUT_MILLIS:  Long
+    val KAFKA_MAX_POLL_RECORDS:     Int
+    
   }
 
   class ActualEnvironment extends Common.ActualEnvironment with Environment {
@@ -35,10 +36,16 @@ object Config {
                                       .getOrElse(Defaults.KAFKA_POLL_TIMEOUT_MILLIS)
                                       .toLong
 
+    val KAFKA_MAX_POLL_RECORDS    = Utils
+                                      .getEnvVarOptionInt("KAFKA_MAX_POLL_RECORDS")
+                                      .getOrElse(Defaults.KAFKA_MAX_POLL_RECORDS)
+
+    
     private object Defaults {
       val KAFKA_GROUP_ID            = "aggregate-processors"
       val KAFKA_CLIENT_ID           = "consumer"
       val KAFKA_POLL_TIMEOUT_MILLIS = 1000
+      val KAFKA_MAX_POLL_RECORDS    = 500
     }
     
   }
@@ -53,6 +60,7 @@ object Config {
       props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[UserTagDeserializer])
       props.put(ConsumerConfig.GROUP_ID_CONFIG,                 env.KAFKA_GROUP_ID)
       props.put(ConsumerConfig.CLIENT_ID_CONFIG,                env.KAFKA_CLIENT_ID)
+      props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,         env.KAFKA_MAX_POLL_RECORDS)
 
       props
     }

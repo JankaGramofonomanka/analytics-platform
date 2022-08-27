@@ -85,22 +85,23 @@ export DOCKER_USERNAME=<your-docker-username>
 
 - run the app remotely
 
-  - To run the app remotely you will adittionally need to specify the host and
-    port of where your database is availible and the address of the kafka broker.
+  - To run the app remotely you will 2 machines, where you will host your database nodes, 
+    1 machine where you will run the kafka broker, and one or more machines to run frontend and aggregate-processor.
+    
+    You will adittionally need to specify the host of one of the database nodes and the address of the kafka broker.
     
     Add the following lines to `.env` (remember, you also need `DOCKER_USERNAME`)
     ```
     DOCKER_USERNAME=<your-docker-username>
-    AEROSPIKE_HOSTNAME=<host-of-the-database>
-    AEROSPIKE_PORT=<port-of-the-database>
+    AEROSPIKE_HOSTNAME=<host-of-the-database-node>
     KAFKA_BOOTSTRAP_SERVERS=<address-of-kafka-broker>
     ```
 
     choose a `PATH` (can be different for all machines) on your remote machines and copy the `.env` file there
     ```
-    scp .env <USER>@<KAFKA-MACHINE>:<PATH>/.env
-    scp .env <USER>@<FRONTEND-MACHINE>:<PATH>/.env
-    scp .env <USER>@<AGG-PROC-MACHINE>:<PATH>/.env
+    scp .env <USER>@<KAFKA-HOST>:<PATH>/.env
+    scp .env <USER>@<FRONTEND-HOST>:<PATH>/.env
+    scp .env <USER>@<AGG-PROC-HOST>:<PATH>/.env
     ```
   
   - push the images (run the commands in separate terminals to speed things up):
@@ -109,21 +110,69 @@ export DOCKER_USERNAME=<your-docker-username>
     docker push ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
     ```
   
+  - Copy the aerospike.conf files to your remote machines:
+    ```
+    scp database/src/main/resources/aerospike.conf <USER>@<DATABASE-NODE-1-HOST>:<PATH>/aerospike.conf
+    scp database/src/main/resources/aerospike.conf <USER>@<DATABASE-NODE-2-HOST>:<PATH>/aerospike.conf
+    ```
+
   - Copy the docker-compose files to your remote machines:
     ```
-    scp kafka/src/main/docker/docker-compose.yml                <USER>@<KAFKA-MACHINE>:<PATH>/docker-compose.yml
-    scp database/src/main/docker/docker-compose.yml             <USER>@<DATABASE-MACHINE>:<PATH>/docker-compose.yml
-    scp frontend/src/main/docker/docker-compose.yml             <USER>@<FRONTEND-MACHINE>:<PATH>/docker-compose.yml
-    scp aggregate-processor/src/main/docker/docker-compose.yml  <USER>@<AGG-PROC-MACHINE>:<PATH>/docker-compose.yml
+    scp kafka/src/main/docker/docker-compose.yml                <USER>@<KAFKA-HOST>:<PATH>/docker-compose.yml
+    scp frontend/src/main/docker/docker-compose.yml             <USER>@<FRONTEND-HOST>:<PATH>/docker-compose.yml
+    scp aggregate-processor/src/main/docker/docker-compose.yml  <USER>@<AGG-PROC-HOST>:<PATH>/docker-compose.yml
     ```
 
-  - On your remote database machine:
-    ```
-    cd <PATH>
-    sudo docker-compose up
-    ```
+  - On your remote database machines:
+    
+    
 
-  - On remote kafka machines:
+    - Install aerospike:
+
+      Download the Aerospike Community Version installation package:
+
+      ```
+      wget -O aerospike.tgz https://download.aerospike.com/download/server/5.7.0.16/artifact/ubuntu20
+      ```
+
+      Install the server:
+
+      ```
+      tar xzvf aerospike.tgz
+      cd aerospike-server-community-5.7.0.16-ubuntu20.04/
+      sudo ./asinstall
+      ```
+
+      Create the logging directory:
+
+      ```
+      sudo mkdir /var/log/aerospike
+      ```
+
+    - Run aerospke:
+    
+      Open aerospike.conf and replace `<IP_ADDRESS_OF_THE_CURRENT_SERVER>` and 
+      `<IP_ADDRESS_OF_THE_OTHER_SERVER>` with the ip's of respective machines
+      ```
+      cd <PATH>
+      nano aerospike.conf
+      <...>
+      ```
+
+      Copy the Aerospike server configuration file:
+      ```
+      sudo cp aerospike.conf /etc/aerospike/
+      ```
+
+      Run the server on both nodes and verify the status:
+
+      ```
+      sudo systemctl start aerospike
+      sudo systemctl status aerospike
+      ```
+
+
+  - On the remote kafka machines:
     
     run kafka:
     ```
@@ -187,31 +236,33 @@ export DOCKER_USERNAME=<your-docker-username>
 
 The app uses the following environment variables:
 
-| Variable                    | Format          | Default Value           | Description                                                           |
-| --------------------------- | --------------- |------------------------ | --------------------------------------------------------------------- |
-| `AEROSPIKE_HOSTNAME`        | string          | "localhost"             | Name of the host of the database                                      |
-| `AEROSPIKE_PORT`            | integer         | 3000                    | Port at which the database is availible                               |
-| `AEROSPIKE_NAMESPACE`       | string          | "analyticsplatform"     | Aerospike namespace in which your data is stored                      |
-| `AEROSPIKE_PROFILES_SET`    | string          | "profiles"              | Name of the set where user profiles are stored                        |
-| `AEROSPIKE_AGGREGATES_SET`  | string          | "aggregates"            | Name of the set where aggregates are stored                           |
-| `AEROSPIKE_PROFILES_BIN`    | string          | "profile"               | Name of the bin of a record where profiles are stored                 |
-| `AEROSPIKE_AGGREGATES_BIN`  | string          | "aggregate"             | Name of the bin of a record where aggregates are stored               |
-| `KAFKA_TOPIC`               | string          | "tags-to-aggregate"     | Name of the topic where the events are published, to be aggregated    |
-| `KAFKA_BOOTSTRAP_SERVERS`   | string:integer  | "localhost:9092"        | Address of the kafka broker                                           |
-|                             |                 |                         |                                                                       |
-| Only used by **aggregate-processor**: |       |                         |                                                                       |
-| `KAFKA_GROUP`               | string          | "aggregate-processors"  | Id of the consumer group to to which the aggregate processor belongs  |
-| `KAFKA_CONSUMER_ID`         | string          | "consumer"              | Id of the consumer                                                    |
-| `KAFKA_POLL_TIMEOUT`        | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method      |
-|                             |                 |                         |                                                                       |
-| Only used by **frontend**:  |                 |                         |                                                                       |
-| `NUM_TAGS_TO_KEEP`          | integer         | 200                     | Maximum number of events to be stored per user                        |
-| `DEFAULT_LIMIT`             | integer         | 200                     | Default number of events to be returned in a `/user_profiles` request |
-| `FRONTEND_HOSTNAME`         | string          | "0.0.0.0"               | Name of the host of the frontend app                                  |
-| `FRONTEND_PORT`             | integer         | 8080                    | Port at which frontend will be availible                              |
-| `USE_LOGGER`                | TRUE or FALSE   | TURE                    | Disables the logger middleware when set to FALSE                      |
-| `LOG_HEADERS`               | TRUE or FALSE   | FALSE                   | If set to TRUE, the app will log headers of requests and responses (ignored when USE_LOGGER=False) |
-| `LOG_BODY`                  | TRUE or FALSE   | FALSE                   | If set to TRUE, the app will log bodies of requests and responses (ignored when USE_LOGGER=False) |
+| Variable                          | Format          | Default Value           | Description                                                         |
+| --------------------------------- | --------------- |------------------------ | ------------------------------------------------------------------- |
+| `AEROSPIKE_HOSTNAME`              | string          | "localhost"             | Name of the host of the database                                    |
+| `AEROSPIKE_PORT`                  | integer         | 3000                    | Port at which the database is availible                             |
+| `AEROSPIKE_PROFILES_NAMESPACE`    | string          | "profiles"              | Aerospike namespace in which the profiles are stored                |
+| `AEROSPIKE_AGGREGATES_NAMESPACE`  | string          | "aggregates"            | Aerospike namespace in which the aggregates are stored              |
+| `AEROSPIKE_PROFILES_BIN`          | string          | "profile"               | Name of the bin of a record where profiles are stored               |
+| `AEROSPIKE_AGGREGATES_BIN`        | string          | "aggregate"             | Name of the bin of a record where aggregates are stored             |
+| `AEROSPIKE_COMMIT_LEVEL`          | MASTER / ALL    | ALL                     | the queries to the database will be successfull whan committed on ALL nodes / MASTER node |
+| `AEROSPIKE_GENERATION_POLICY`     | EQ / GT / NONE  | EQ                      | the queries to the database will be succesfull if the expected record generation is equal to (EQ) / greater then (GT) the actual generation / the queries will be always successfull (NONE) |
+| `KAFKA_TOPIC`                     | string          | "tags-to-aggregate"     | Name of the topic where the events are published, to be aggregated  |
+| `KAFKA_BOOTSTRAP_SERVERS`         | string:integer  | "localhost:9092"        | Address of the kafka broker                                         |
+|                                   |                 |                         |                                                                     |
+| Only used by **aggregate-processor**: |     |                         |                                                                               |
+| `KAFKA_GROUP`             | string          | "aggregate-processors"  | Id of the consumer group to to which the aggregate processor belongs          |
+| `KAFKA_CONSUMER_ID`       | string          | "consumer"              | Id of the consumer                                                            |
+| `KAFKA_POLL_TIMEOUT`      | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method              |
+| `KAFKA_MAX_POLL_RECORDS`  | integer         | 500                     | maximum number ofrecords that can be sent to the aggregate-processor at once  |
+|                           |                 |                         |                                                                               |
+| Only used by **frontend**:  |               |           |                                                                                                     |
+| `NUM_TAGS_TO_KEEP`          | integer       | 200       | Maximum number of events to be stored per user                                                      |
+| `DEFAULT_LIMIT`             | integer       | 200       | Default number of events to be returned in a `/user_profiles` request                               |
+| `FRONTEND_HOSTNAME`         | string        | "0.0.0.0" | Name of the host of the frontend app                                                                |
+| `FRONTEND_PORT`             | integer       | 8080      | Port at which frontend will be availible                                                            |
+| `USE_LOGGER`                | TRUE / FALSE  | TURE      | Disables the logger middleware when set to FALSE                                                    |
+| `LOG_HEADERS`               | TRUE / FALSE  | FALSE     | If set to TRUE, the app will log headers of requests and responses (ignored when USE_LOGGER=False)  |
+| `LOG_BODY`                  | TRUE / FALSE  | FALSE     | If set to TRUE, the app will log bodies of requests and responses (ignored when USE_LOGGER=False)   |
 
 
 

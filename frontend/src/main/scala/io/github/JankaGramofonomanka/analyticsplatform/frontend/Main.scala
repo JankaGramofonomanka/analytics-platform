@@ -1,5 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.frontend
 
+import scala.concurrent.ExecutionContext
 import cats.effect.{ExitCode, IO, IOApp}
 
 import org.apache.kafka.clients.producer._
@@ -14,6 +15,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.frontend.codecs.IOEntityC
 object Main extends IOApp {
   def run(args: List[String]) = {
 
+    implicit val ec = ExecutionContext.global
     implicit val env: Config.Environment = new Config.ActualEnvironment
 
     val db = new Aerospike.DB(Config.Common.Aerospike.getClient)

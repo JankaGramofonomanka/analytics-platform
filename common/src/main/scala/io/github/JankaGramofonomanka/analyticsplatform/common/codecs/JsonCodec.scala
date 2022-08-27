@@ -135,9 +135,27 @@ object JsonCodec {
     Json.fromValues(bucket ++ fields ++ sumPrice ++ count)
   }
 
-  // TODO consider more efficiend encoding ex. concatenate strings
-  implicit val aggregateKeyEncoder: Encoder[AggregateKey] = deriveConfiguredEncoder[AggregateKey]
-  implicit val aggregateKeyDecoder: Decoder[AggregateKey] = deriveConfiguredDecoder[AggregateKey]
+  implicit val aggregateKeyEncoder: Encoder[AggregateKey] = new Encoder[AggregateKey] {
+
+    private val noneJson: Json = 0.asJson
+    
+    def apply(key: AggregateKey): Json = {
+      val bucketJson = key.bucket.getSeconds.asJson
+      val actionJson = key.action match {
+        case BUY  => 1.asJson
+        case VIEW => 2.asJson
+      }
+      Json.arr(
+        bucketJson,
+        actionJson,
+        
+        key.origin    .map(_.asJson).getOrElse(noneJson),
+        key.brandId   .map(_.asJson).getOrElse(noneJson),
+        key.categoryId.map(_.asJson).getOrElse(noneJson),
+      )
+    }
+  }
+
 
   implicit val aggregateValueEncoder: Encoder[AggregateValue] = deriveConfiguredEncoder[AggregateValue]
   implicit val aggregateValueDecoder: Decoder[AggregateValue] = deriveConfiguredDecoder[AggregateValue]

@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import java.time.LocalDateTime
+import java.time.ZoneOffset.UTC
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -46,6 +47,8 @@ object Data {
   // TODO how to enforce rounding of `value` on bucket creation?
   final case class Bucket(private val value: LocalDateTime) extends AnyVal {
     def addMinutes(n: Long): Bucket = Bucket(value.plus(n, ChronoUnit.MINUTES))
+    
+    def getSeconds: Long = value.toEpochSecond(UTC)
     
     def toTimestamp: Timestamp = Timestamp(value)
     def toDateTime: DateTime = value

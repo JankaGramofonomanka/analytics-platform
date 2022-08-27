@@ -1,6 +1,7 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common
 
 import scala.util.Try
+import scala.concurrent.{Future, ExecutionContext}
 
 import cats.effect.IO
 
@@ -16,49 +17,55 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.codecs.AerospikeCo
 object Aerospike {
 
   final case class Namespace(value: String) extends AnyVal
-  final case class SetName  (value: String) extends AnyVal
   final case class BinName  (value: String) extends AnyVal
 
-  class DB(client: AerospikeClient)(implicit env: Environment) {
+  class DB(client: AerospikeClient)(implicit env: Environment, ec: ExecutionContext) {
 
     private object Config {
-      val namespace         = Namespace(env.AEROSPIKE_NAMESPACE)
-      val profilesSetName   = SetName(env.AEROSPIKE_PROFILES_SET)
-      val aggregatesSetName = SetName(env.AEROSPIKE_AGGREGATES_SET)
-      val profileBinName    = BinName(env.AEROSPIKE_PROFILES_BIN)
-      val aggregateBinName  = BinName(env.AEROSPIKE_AGGREGATES_BIN)
+      val profilesNamespace   = Namespace(env.AEROSPIKE_PROFILES_NAMESPACE)
+      val aggregatesNamespace = Namespace(env.AEROSPIKE_AGGREGATES_NAMESPACE)
+      val profileBinName      = BinName(env.AEROSPIKE_PROFILES_BIN)
+      val aggregateBinName    = BinName(env.AEROSPIKE_AGGREGATES_BIN)
     }
 
     private val codec = AerospikeCodec
 
-    private def mkKey(setName: SetName, key: String): Key = new Key(Config.namespace.value, setName.value, key)
+    private def mkKey(namespace: Namespace, key: String): Key = new Key(namespace.value, null, key)
+
+    private def pureFromFuture[A](future: Future[A]): IO[A] = IO.fromFuture { IO.delay { future } }
 
     
-    private def getRecord(setName: SetName, keyS: String): IO[TrackGenT[Option, Record]] = {
-      val key = mkKey(setName, keyS)
+    private def getRecord(namespace: Namespace, keyS: String): IO[TrackGenT[Option, Record]] = {
+      val key = mkKey(namespace, keyS)
       for {
-        record <- IO.delay(client.get(client.readPolicyDefault, key))
+        record <- pureFromFuture(Future { client.get(client.readPolicyDefault, key) })
         optRecord = Utils.checkForNull(record)
         generation = optRecord.map(_.generation).getOrElse(Generation.default)
       } yield TrackGenT(TrackGen(optRecord, generation))
     }
 
-    private def getBytes(setName: SetName, key: String, binName: BinName): IO[TrackGenT[Option, Array[Byte]]]
+    private def getBytes(namespace: Namespace, key: String, binName: BinName): IO[TrackGenT[Option, Array[Byte]]]
       = for {
-          record <- getRecord(setName, key)
+          record <- getRecord(namespace, key)
       } yield for {
         record <- record
         obj <- Utils.checkForNull(record.getValue(binName.value))
       } yield obj.asInstanceOf[Array[Byte]]
 
 
-    private def putBin(setName: SetName, keyS: String, bin: Bin, generation: Int): IO[Boolean] = IO.delay {
-      val key = mkKey(setName, keyS)
+    
+    private def putBin(namespace: Namespace, keyS: String, bin: Bin, generation: Int): IO[Boolean] = {
+    
+      val key = mkKey(namespace, keyS)
 
       val policy = client.writePolicyDefault
       policy.generation = generation
 
-      Try(client.operate(policy, key, Operation.put(bin))).isSuccess
+      for {
+        // TODO other exceptions than `GenerationError`?
+        res <- pureFromFuture(Future { Try(client.operate(policy, key, Operation.put(bin))) })
+        
+      } yield res.isSuccess
     }
 
 
@@ -67,14 +74,14 @@ object Aerospike {
       
       def get(cookie: Cookie): IO[TrackGen[SimpleProfile]] = for {
         
-        bytes <- getBytes(Config.profilesSetName, cookie.value, Config.profileBinName)
+        bytes <- getBytes(Config.profilesNamespace, cookie.value, Config.profileBinName)
         decoded = bytes.flatMap(bytes => codec.decodeProfile(bytes)).value
 
       } yield decoded.map(_.getOrElse(SimpleProfile.default))
 
       def update(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean] = {
         val bin = new Bin(Config.profileBinName.value, codec.encodeProfile(profile.value))
-        putBin(Config.profilesSetName, cookie.value, bin, profile.generation)
+        putBin(Config.profilesNamespace, cookie.value, bin, profile.generation)
       }
     }
     
@@ -84,14 +91,14 @@ object Aerospike {
 
       def get(key: AggregateKey): IO[TrackGen[AggregateValue]] = for {
         
-        bytes <- getBytes(Config.aggregatesSetName, codec.encodeAggregateKey(key), Config.aggregateBinName)
+        bytes <- getBytes(Config.aggregatesNamespace, codec.encodeAggregateKey(key), Config.aggregateBinName)
         decoded = bytes.flatMap(bytes => codec.decodeAggregateValue(bytes)).value
 
       } yield decoded.map(_.getOrElse(AggregateValue.default))
 
       def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean] = {
         val bin = new Bin(Config.aggregateBinName.value, codec.encodeAggregateValue(value.value))
-        putBin(Config.aggregatesSetName, codec.encodeAggregateKey(key), bin, value.generation)
+        putBin(Config.aggregatesNamespace, codec.encodeAggregateKey(key), bin, value.generation)
       }  
     }
   }

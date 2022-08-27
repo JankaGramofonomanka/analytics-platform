@@ -1,6 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
 
-import cats.effect.Sync
+import cats.effect.Async
 import cats.effect.ExitCode
 import cats.implicits._
 
@@ -11,7 +11,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
 
-class AggregateProcessorOps[F[_]: Sync](
+class AggregateProcessorOps[F[_]: Async](
   aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
   tagsToAggregate:  Topic.Subscriber[F, UserTag],
 ) {
@@ -23,6 +23,9 @@ class AggregateProcessorOps[F[_]: Sync](
       _ <- keys.traverse { key => Utils.tryTillSuccess {
 
           for {
+            // TODO It seems that without this line, the next line is computed 
+            //      only once, causing an infinite loop
+            _ <- Utils.pure[F, Unit](())
             value <- aggregates.get(key)
             newValue = value.map(_.update(tag.productInfo.price))
             
