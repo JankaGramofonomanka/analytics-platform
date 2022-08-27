@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor
 
 import cats.effect.Async
 import cats.effect.ExitCode
@@ -10,9 +10,9 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config.Environment
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Environment
 
-class AggregateProcessorOps[F[_]: Async](
+class TagProcessorOps[F[_]: Async](
   profiles:         KeyValueDB[F, Cookie, SimpleProfile],
   aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
   tagsToAggregate:  Topic.Subscriber[F, UserTag],

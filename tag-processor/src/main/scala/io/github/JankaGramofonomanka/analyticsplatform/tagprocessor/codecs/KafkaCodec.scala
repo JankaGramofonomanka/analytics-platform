@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.codecs
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.codecs
 
 import io.circe.parser._
 

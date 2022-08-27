@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor
 
 import cats.effect.IO
 import fs2.Stream
@@ -10,7 +10,7 @@ import scala.jdk.CollectionConverters._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config.Environment
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Environment
 
 class KafkaSubscriber(consumer: KafkaConsumer[Nothing, UserTag])(implicit env: Environment)
 extends Topic.Subscriber[IO, UserTag] {

@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor
 
 import scala.concurrent.ExecutionContext
 import cats.effect.{ExitCode, IO, IOApp}
@@ -9,9 +9,9 @@ import org.apache.kafka.clients.consumer._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Aerospike
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Server
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.KafkaSubscriber
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Server
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.KafkaSubscriber
 
 
 

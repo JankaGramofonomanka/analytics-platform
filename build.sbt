@@ -39,7 +39,7 @@ lazy val commonSettings = Seq(
 
 lazy val root = (project in file(".")).aggregate(
   frontend,
-  aggregateProcessor, 
+  tagProcessor, 
   common,
 )
 
@@ -57,10 +57,10 @@ lazy val frontend = (project in file("frontend"))
   )
   .dependsOn(common)
 
-lazy val aggregateProcessor = (project in file("aggregate-processor"))
+lazy val tagProcessor = (project in file("tag-processor"))
   .settings(commonSettings)
   .settings(
-    name := "aggregate-processor",
+    name := "tag-processor",
   )
   .dependsOn(common)
 
@@ -79,7 +79,7 @@ lazy val test = (project in file("test"))
       Libs.scalatest,
     ),
   )
-  .dependsOn(frontend, aggregateProcessor)
+  .dependsOn(frontend, tagProcessor)
 
 lazy val echo = (project in file("echo"))
   .settings(

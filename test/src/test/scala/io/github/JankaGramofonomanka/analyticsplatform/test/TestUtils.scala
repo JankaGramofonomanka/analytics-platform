@@ -9,8 +9,8 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.frontend.FrontendOps
 import io.github.JankaGramofonomanka.analyticsplatform.frontend.Config.{Environment => FrontendEnv}
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.AggregateProcessorOps
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config.{Environment => ProcEnv}
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.TagProcessorOps
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.{Environment => ProcEnv}
 import io.github.JankaGramofonomanka.analyticsplatform.test.Mock
 
 
@@ -71,10 +71,10 @@ object TestUtils {
     StorageInterface(db.Profiles, db.Aggregates, topic.Publisher, topic.Subscriber)
   }
 
-  def getOps[F[_]: Async](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {
+  def getOps[F[_]: Async](interface: StorageInterface[F]): (FrontendOps[F], TagProcessorOps[F]) = {
     implicit val env = MockEnv
     val frontend            = new FrontendOps[F](interface.profiles, interface.aggregates, interface.publisher)
-    val aggregateProcessor  = new AggregateProcessorOps[F](interface.profiles, interface.aggregates, interface.subscriber)
+    val aggregateProcessor  = new TagProcessorOps[F](interface.profiles, interface.aggregates, interface.subscriber)
     (frontend, aggregateProcessor)
   }
 

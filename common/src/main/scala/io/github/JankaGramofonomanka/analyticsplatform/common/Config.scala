@@ -75,7 +75,7 @@ object Config {
       val AEROSPIKE_COMMIT_LEVEL          = "ALL"
       val AEROSPIKE_GENERATION_POLICY     = "EQ"
 
-      val KAFKA_TOPIC               = "tags-to-aggregate"
+      val KAFKA_TOPIC               = "tags"
       val KAFKA_BOOTSTRAP_SERVERS   = "localhost:9092"
     }
   }

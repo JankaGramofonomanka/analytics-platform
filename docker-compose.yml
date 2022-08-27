@@ -32,7 +32,7 @@ services:
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
     
-    command: sh -c "((sleep 15 && kafka-topics --bootstrap-server localhost:9092 --topic tags-to-aggregate --create --partitions 10)&) && /etc/confluent/docker/run "
+    command: sh -c "((sleep 15 && kafka-topics --bootstrap-server localhost:9092 --topic tags --create --partitions 10)&) && /etc/confluent/docker/run "
     
     
   
@@ -59,12 +59,12 @@ services:
       - 8080:8080
     network_mode: host
     
-  aggregate-processor:
+  tag-processor:
     build:
       context: .
-      dockerfile: ./aggregate-processor/src/main/docker/Dockerfile
-    container_name: local-aggregate-processor
-    image: ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
+      dockerfile: ./tag-processor/src/main/docker/Dockerfile
+    container_name: local-tag-processor
+    image: ${DOCKER_USERNAME}/analytics-platform-tag-processor
     depends_on:
       - kafka
       - aerospike

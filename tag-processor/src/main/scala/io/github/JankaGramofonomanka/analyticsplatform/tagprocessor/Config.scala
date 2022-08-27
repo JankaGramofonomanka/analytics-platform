@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor
 
 
 import java.util.Properties
@@ -8,7 +8,7 @@ import org.apache.kafka.clients.consumer._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.{Config => CommonConfig}
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.codecs.KafkaCodec.UserTagDeserializer
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.codecs.KafkaCodec.UserTagDeserializer
 
 object Config {
 

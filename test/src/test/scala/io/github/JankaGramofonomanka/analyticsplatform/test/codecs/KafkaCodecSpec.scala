@@ -4,7 +4,7 @@ import org.scalatest.freespec.AnyFreeSpec
 
 
 import io.github.JankaGramofonomanka.analyticsplatform.frontend.codecs.KafkaCodec.UserTagSerializer
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.codecs.KafkaCodec.UserTagDeserializer
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.codecs.KafkaCodec.UserTagDeserializer
 import io.github.JankaGramofonomanka.analyticsplatform.test.ExampleData
 
 

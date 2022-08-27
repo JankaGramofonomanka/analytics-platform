@@ -14,14 +14,14 @@ This is a final project at a university course, and the exact requirements for t
 ## How it works
 The project is intended to be a distributed application and it has the followind components:
 - frontend
-- aggregate-processor
+- tag-processor
 - a database
 - a kafka broker
 
 **frontend** is responsible for communication with the client.
-It receives requests, queries the **database** to compute and return the answer requested by the client, it publishes the events to a **kafka topic**, to be stored and aggregated by the **aggregate-processor**.
+It receives requests, queries the **database** to compute and return the answer requested by the client, it publishes the events to a **kafka topic**, to be stored and aggregated by the **tag-processor**.
 
-**aggregate-processor** subscribes to the **kafka topic**, stores the events in the **database**, selects relevant aggregates to be updated and updates them.
+**tag-processor** subscribes to the **kafka topic**, stores the events in the **database**, selects relevant aggregates to be updated and updates them.
 
 ## Run the app
 ### Note:
@@ -39,7 +39,7 @@ It receives requests, queries the **database** to compute and return the answer 
   create a topic:
   ```
   docker exec -it broker bash
-  [appuser@broker ~]$ kafka-topics --bootstrap-server localhost:9092 --topic tags-to-aggregate --create --partitions 10
+  [appuser@broker ~]$ kafka-topics --bootstrap-server localhost:9092 --topic tags --create --partitions 10 --config retention.ms=300000
   ```
 
 - run database:
@@ -52,9 +52,9 @@ It receives requests, queries the **database** to compute and return the answer 
   sbt "project frontend" "~reStart"
   ```
 
-- run aggregate-processor:
+- run tag-processor:
   ```
-  sbt "project aggregateProcessor" "~reStart"
+  sbt "project tagProcessor" "~reStart"
   ```
 ### with docker
 To build and use the docker images you will need to specify your docker username.
@@ -71,11 +71,11 @@ export DOCKER_USERNAME=<your-docker-username>
         -f frontend/src/main/docker/Dockerfile
     ```
 
-  - aggregate-processor:
+  - tag-processor:
     ```
     docker build . \
-        -t ${DOCKER_USERNAME}/analytics-platform-aggregate-processor \
-        -f aggregate-processor/src/main/docker/Dockerfile
+        -t ${DOCKER_USERNAME}/analytics-platform-tag-processor \
+        -f tag-processor/src/main/docker/Dockerfile
     ```
 
 - run the app locally
@@ -86,7 +86,7 @@ export DOCKER_USERNAME=<your-docker-username>
 - run the app remotely
 
   - To run the app remotely you will 2 machines, where you will host your database nodes, 
-    1 machine where you will run the kafka broker, and one or more machines to run frontend and aggregate-processor.
+    1 machine where you will run the kafka broker, and one or more machines to run frontend and tag-processor.
     
     You will adittionally need to specify the host of one of the database nodes and the address of the kafka broker.
     
@@ -101,13 +101,13 @@ export DOCKER_USERNAME=<your-docker-username>
     ```
     scp .env <USER>@<KAFKA-HOST>:<PATH>/.env
     scp .env <USER>@<FRONTEND-HOST>:<PATH>/.env
-    scp .env <USER>@<AGG-PROC-HOST>:<PATH>/.env
+    scp .env <USER>@<TAG-PROC-HOST>:<PATH>/.env
     ```
   
   - push the images (run the commands in separate terminals to speed things up):
     ```
     docker push ${DOCKER_USERNAME}/analytics-platform-frontend
-    docker push ${DOCKER_USERNAME}/analytics-platform-aggregate-processor
+    docker push ${DOCKER_USERNAME}/analytics-platform-tag-processor
     ```
   
   - Copy the aerospike.conf files to your remote machines:
@@ -118,9 +118,9 @@ export DOCKER_USERNAME=<your-docker-username>
 
   - Copy the docker-compose files to your remote machines:
     ```
-    scp kafka/src/main/docker/docker-compose.yml                <USER>@<KAFKA-HOST>:<PATH>/docker-compose.yml
-    scp frontend/src/main/docker/docker-compose.yml             <USER>@<FRONTEND-HOST>:<PATH>/docker-compose.yml
-    scp aggregate-processor/src/main/docker/docker-compose.yml  <USER>@<AGG-PROC-HOST>:<PATH>/docker-compose.yml
+    scp kafka/src/main/docker/docker-compose.yml          <USER>@<KAFKA-HOST>:<PATH>/docker-compose.yml
+    scp frontend/src/main/docker/docker-compose.yml       <USER>@<FRONTEND-HOST>:<PATH>/docker-compose.yml
+    scp tag-processor/src/main/docker/docker-compose.yml  <USER>@<TAG-PROC-HOST>:<PATH>/docker-compose.yml
     ```
 
   - On your remote database machines:
@@ -183,7 +183,8 @@ export DOCKER_USERNAME=<your-docker-username>
     create a topic:
     ```
     docker exec -it broker bash
-    [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags-to-aggregate --create --partitions 10
+    [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags --create --partitions 10 --config retention.ms=300000
+    
     ```
 
   - On your remote frontend machine:
@@ -195,19 +196,19 @@ export DOCKER_USERNAME=<your-docker-username>
     sudo docker-compose up
     ```
 
-  - On your remote aggregate-processor machine:
+  - On your remote tag-processor machine:
 
     pull and run the image
     ```
     cd <PATH>
-    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-aggregate-processor:latest
+    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-tag-processor:latest
     sudo docker-compose up
     ```
 
 - run the app remotely with multiple replicas
   
-  - To replicate aggregate-processor, just run more of them
-    You might want to give each aggregate-processor a unique consumer id.
+  - To replicate tag-processor, just run more of them
+    You might want to give each tag-processor a unique consumer id.
     To do that modify the field `KAFKA_CONSUMER_ID` in `docker-compose.yaml`.
   
   - To replicate frontend, you will need a loadbalancer.
@@ -236,26 +237,26 @@ export DOCKER_USERNAME=<your-docker-username>
 
 The app uses the following environment variables:
 
-| Variable                          | Format          | Default Value           | Description                                                         |
-| --------------------------------- | --------------- |------------------------ | ------------------------------------------------------------------- |
-| `AEROSPIKE_HOSTNAME`              | string          | "localhost"             | Name of the host of the database                                    |
-| `AEROSPIKE_PORT`                  | integer         | 3000                    | Port at which the database is availible                             |
-| `AEROSPIKE_PROFILES_NAMESPACE`    | string          | "profiles"              | Aerospike namespace in which the profiles are stored                |
-| `AEROSPIKE_AGGREGATES_NAMESPACE`  | string          | "aggregates"            | Aerospike namespace in which the aggregates are stored              |
-| `AEROSPIKE_PROFILES_BIN`          | string          | "profile"               | Name of the bin of a record where profiles are stored               |
-| `AEROSPIKE_AGGREGATES_BIN`        | string          | "aggregate"             | Name of the bin of a record where aggregates are stored             |
-| `AEROSPIKE_COMMIT_LEVEL`          | MASTER / ALL    | ALL                     | the queries to the database will be successfull whan committed on ALL nodes / MASTER node |
-| `AEROSPIKE_GENERATION_POLICY`     | EQ / GT / NONE  | EQ                      | the queries to the database will be succesfull if the expected record generation is equal to (EQ) / greater then (GT) the actual generation / the queries will be always successfull (NONE) |
-| `KAFKA_TOPIC`                     | string          | "tags-to-aggregate"     | Name of the topic where the events are published, to be aggregated  |
-| `KAFKA_BOOTSTRAP_SERVERS`         | string:integer  | "localhost:9092"        | Address of the kafka broker                                         |
-|                                   |                 |                         |                                                                     |
-| Only used by **aggregate-processor**: |     |                         |                                                                               |
-| `NUM_TAGS_TO_KEEP`          | integer       | 200       | Maximum number of events to be stored per user                                                      |
-| `KAFKA_GROUP`             | string          | "aggregate-processors"  | Id of the consumer group to to which the aggregate processor belongs          |
-| `KAFKA_CONSUMER_ID`       | string          | "consumer"              | Id of the consumer                                                            |
-| `KAFKA_POLL_TIMEOUT`      | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method              |
-| `KAFKA_MAX_POLL_RECORDS`  | integer         | 500                     | maximum number ofrecords that can be sent to the aggregate-processor at once  |
-|                           |                 |                         |                                                                               |
+| Variable                          | Format          | Default Value     | Description                                                         |
+| --------------------------------- | --------------- |------------------ | ------------------------------------------------------------------- |
+| `AEROSPIKE_HOSTNAME`              | string          | "localhost"       | Name of the host of the database                                    |
+| `AEROSPIKE_PORT`                  | integer         | 3000              | Port at which the database is availible                             |
+| `AEROSPIKE_PROFILES_NAMESPACE`    | string          | "profiles"        | Aerospike namespace in which the profiles are stored                |
+| `AEROSPIKE_AGGREGATES_NAMESPACE`  | string          | "aggregates"      | Aerospike namespace in which the aggregates are stored              |
+| `AEROSPIKE_PROFILES_BIN`          | string          | "profile"         | Name of the bin of a record where profiles are stored               |
+| `AEROSPIKE_AGGREGATES_BIN`        | string          | "aggregate"       | Name of the bin of a record where aggregates are stored             |
+| `AEROSPIKE_COMMIT_LEVEL`          | MASTER / ALL    | ALL               | the queries to the database will be successfull whan committed on ALL nodes / MASTER node |
+| `AEROSPIKE_GENERATION_POLICY`     | EQ / GT / NONE  | EQ                | the queries to the database will be succesfull if the expected record generation is equal to (EQ) / greater then (GT) the actual generation / the queries will be always successfull (NONE) |
+| `KAFKA_TOPIC`                     | string          | "tags"            | Name of the topic where the events are published, to be aggregated  |
+| `KAFKA_BOOTSTRAP_SERVERS`         | string:integer  | "localhost:9092"  | Address of the kafka broker                                         |
+|                                   |                 |                   |                                                                     |
+| Only used by **tag-processor**:   |                 |                   |                                                                     |
+| `NUM_TAGS_TO_KEEP`        | integer         | 200                     | Maximum number of events to be stored per user                          |
+| `KAFKA_GROUP`             | string          | "tag-processors"        | Id of the consumer group to to which the tag processor belongs          |
+| `KAFKA_CONSUMER_ID`       | string          | "consumer"              | Id of the consumer                                                      |
+| `KAFKA_POLL_TIMEOUT`      | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method        |
+| `KAFKA_MAX_POLL_RECORDS`  | integer         | 500                     | maximum number ofrecords that can be sent to the tag-processor at once  |
+|                           |                 |                         |                                                                         |
 | Only used by **frontend**:  |               |           |                                                                                                     |
 | `DEFAULT_LIMIT`             | integer       | 200       | Default number of events to be returned in a `/user_profiles` request                               |
 | `FRONTEND_HOSTNAME`         | string        | "0.0.0.0" | Name of the host of the frontend app                                                                |

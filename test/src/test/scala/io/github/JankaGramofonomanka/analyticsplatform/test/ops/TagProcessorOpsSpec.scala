@@ -10,9 +10,9 @@ import io.github.JankaGramofonomanka.analyticsplatform.test.ExampleData.Case1
 import io.github.JankaGramofonomanka.analyticsplatform.test.TestUtils
 
 
-class AggregateProcessorOpsSpec extends AnyFreeSpec {
+class TagProcessorOpsSpec extends AnyFreeSpec {
 
-  "`AggregateProcessorOps.processTags`" - {
+  "`TagProcessorOps.processTags`" - {
     
     val storage = TestUtils.Storage.empty
     val interface = TestUtils.getMocks(storage)

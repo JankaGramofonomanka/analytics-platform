@@ -1,4 +1,4 @@
-package io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor
+package io.github.JankaGramofonomanka.analyticsplatform.tagprocessor
 
 import cats.effect.Async
 import fs2.Stream
@@ -6,8 +6,8 @@ import fs2.Stream
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.AggregateProcessorOps
-import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config.Environment
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.TagProcessorOps
+import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Environment
 
 
 object Server {
@@ -18,7 +18,7 @@ object Server {
     tagsToAggregate:  Topic.Subscriber[F, UserTag],
   )(implicit env: Environment): Stream[F, Nothing] = {
     
-    val ops = new AggregateProcessorOps[F](profiles, aggregates, tagsToAggregate)
+    val ops = new TagProcessorOps[F](profiles, aggregates, tagsToAggregate)
 
     ops.processTags
   }.drain
