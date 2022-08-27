@@ -16,6 +16,7 @@ object Config {
 
   trait Environment extends Common.Environment {
 
+    val NUM_TAGS_TO_KEEP:           Int
     val KAFKA_GROUP_ID:             String
     val KAFKA_CLIENT_ID:            String
     val KAFKA_POLL_TIMEOUT_MILLIS:  Long
@@ -25,6 +26,7 @@ object Config {
 
   class ActualEnvironment extends Common.ActualEnvironment with Environment {
 
+    val NUM_TAGS_TO_KEEP          = Utils.getEnvVarOptionInt("NUM_TAGS_TO_KEEP").getOrElse(Defaults.NUM_TAGS_TO_KEEP)
     val KAFKA_GROUP_ID            = Utils
                                       .getEnvVarOption("KAFKA_GROUP")
                                       .getOrElse(Defaults.KAFKA_GROUP_ID)
@@ -42,6 +44,7 @@ object Config {
 
     
     private object Defaults {
+      val NUM_TAGS_TO_KEEP          = 200
       val KAFKA_GROUP_ID            = "aggregate-processors"
       val KAFKA_CLIENT_ID           = "consumer"
       val KAFKA_POLL_TIMEOUT_MILLIS = 1000

@@ -19,9 +19,9 @@ The project is intended to be a distributed application and it has the followind
 - a kafka broker
 
 **frontend** is responsible for communication with the client.
-It receives requests, queries the **database** to compute and return the answer requested by the client, it stores the events in the **database**, and publishes them to a **kafka topic**, to be aggregated by the **aggregate-processor**.
+It receives requests, queries the **database** to compute and return the answer requested by the client, it publishes the events to a **kafka topic**, to be stored and aggregated by the **aggregate-processor**.
 
-**aggregate-processor** subscribes to the **kafka topic**, selects relevant aggregates to be updated and updates them.
+**aggregate-processor** subscribes to the **kafka topic**, stores the events in the **database**, selects relevant aggregates to be updated and updates them.
 
 ## Run the app
 ### Note:
@@ -250,13 +250,13 @@ The app uses the following environment variables:
 | `KAFKA_BOOTSTRAP_SERVERS`         | string:integer  | "localhost:9092"        | Address of the kafka broker                                         |
 |                                   |                 |                         |                                                                     |
 | Only used by **aggregate-processor**: |     |                         |                                                                               |
+| `NUM_TAGS_TO_KEEP`          | integer       | 200       | Maximum number of events to be stored per user                                                      |
 | `KAFKA_GROUP`             | string          | "aggregate-processors"  | Id of the consumer group to to which the aggregate processor belongs          |
 | `KAFKA_CONSUMER_ID`       | string          | "consumer"              | Id of the consumer                                                            |
 | `KAFKA_POLL_TIMEOUT`      | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method              |
 | `KAFKA_MAX_POLL_RECORDS`  | integer         | 500                     | maximum number ofrecords that can be sent to the aggregate-processor at once  |
 |                           |                 |                         |                                                                               |
 | Only used by **frontend**:  |               |           |                                                                                                     |
-| `NUM_TAGS_TO_KEEP`          | integer       | 200       | Maximum number of events to be stored per user                                                      |
 | `DEFAULT_LIMIT`             | integer       | 200       | Default number of events to be returned in a `/user_profiles` request                               |
 | `FRONTEND_HOSTNAME`         | string        | "0.0.0.0" | Name of the host of the frontend app                                                                |
 | `FRONTEND_PORT`             | integer       | 8080      | Port at which frontend will be availible                                                            |

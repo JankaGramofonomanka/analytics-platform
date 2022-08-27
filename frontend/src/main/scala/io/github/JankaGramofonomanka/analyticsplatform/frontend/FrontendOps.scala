@@ -4,28 +4,16 @@ import cats.effect.Sync
 import cats.implicits._
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
-import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
-import io.github.JankaGramofonomanka.analyticsplatform.frontend.Config.Environment
 
 class FrontendOps[F[_]: Sync](
   profiles:   KeyValueDB[F, Cookie, SimpleProfile],
   aggregates: KeyValueDB[F, AggregateKey, AggregateValue],
   tagsToAggregate: Topic.Publisher[F, UserTag],
-)(implicit env: Environment) {
+) {
   
-  private def tryStoreTag(tag: UserTag): F[Boolean] = for {
-    profile <- profiles.get(tag.cookie)
-    updated = profile.map(_.update(tag, env.NUM_TAGS_TO_KEEP))
-    result <- profiles.update(tag.cookie, updated)
-  } yield result
-
-  def storeTag(tag: UserTag): F[Unit] = for {
-    _ <- Utils.tryTillSuccess(tryStoreTag(tag))
-    _ <- tagsToAggregate.publish(tag)
-  } yield ()
-
+  def storeTag(tag: UserTag): F[Unit] = tagsToAggregate.publish(tag)
 
   def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[PrettyProfile] = for {
     profile <- profiles.get(cookie)

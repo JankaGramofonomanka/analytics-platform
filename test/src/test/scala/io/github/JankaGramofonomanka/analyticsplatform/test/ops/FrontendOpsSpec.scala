@@ -25,11 +25,14 @@ class FrontendOpsSpec extends AnyFreeSpec {
       val tag = General.userTag
       frontend.storeTag(tag).unsafeRunSync()
 
+      // TODO move this somewhere (no longer true since frontend no longer stores tags)?
+      /*
       "stores the tag" in {
         val profile = storage.profiles.get(tag.cookie)
         assert(profile.nonEmpty)
         assert(profile.get.value.tags.contains(tag))
       }
+      */
 
       "publishes the tag" in {
         val expected = tag

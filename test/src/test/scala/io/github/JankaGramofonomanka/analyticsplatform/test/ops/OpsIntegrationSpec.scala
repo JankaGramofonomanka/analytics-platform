@@ -64,11 +64,12 @@ class OpsIntegrationSpec extends AnyFreeSpec {
     val storage = TestUtils.Storage.empty
     val interface = TestUtils.getMocks(storage)
 
-    val (frontend, _) = TestUtils.getOps[IO](interface)
+    val (frontend, proc) = TestUtils.getOps[IO](interface)
 
     val computation: IO[(SimpleProfile, SimpleProfile)] = for {
       _ <- frontend.storeTag(Case2.tag1)
       _ <- frontend.storeTag(Case2.tag2)
+      _ <- proc.processTags.take(2).compile.drain
 
       profile1 <- frontend.getProfile(Case2.cookie1, Case2.timeRange, 2)
       profile2 <- frontend.getProfile(Case2.cookie2, Case2.timeRange, 2)

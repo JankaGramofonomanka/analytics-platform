@@ -29,7 +29,7 @@ object Main extends IOApp {
 
     val tagsToAggregate = new KafkaSubscriber(consumer)
     
-    Server.stream[IO](db.Aggregates, tagsToAggregate).compile.drain.as(ExitCode.Success)
+    Server.stream[IO](db.Profiles, db.Aggregates, tagsToAggregate).compile.drain.as(ExitCode.Success)
   }
 }
 

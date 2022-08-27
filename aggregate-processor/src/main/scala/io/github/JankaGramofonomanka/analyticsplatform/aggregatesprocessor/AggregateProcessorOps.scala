@@ -10,16 +10,26 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
 import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
+import io.github.JankaGramofonomanka.analyticsplatform.aggregateprocessor.Config.Environment
 
 class AggregateProcessorOps[F[_]: Async](
+  profiles:         KeyValueDB[F, Cookie, SimpleProfile],
   aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
   tagsToAggregate:  Topic.Subscriber[F, UserTag],
-) {
+)(implicit env: Environment) {
+
+  private def tryStoreTag(tag: UserTag): F[Boolean] = for {
+    profile <- profiles.get(tag.cookie)
+    updated = profile.map(_.update(tag, env.NUM_TAGS_TO_KEEP))
+    result <- profiles.update(tag.cookie, updated)
+  } yield result
 
   private def processTag(tag: UserTag): Stream[F, ExitCode] = Stream.eval {
     val keys = AggregateKey.fromTag(tag)
 
     for {
+      _ <- Utils.tryTillSuccess(tryStoreTag(tag))
+
       _ <- keys.traverse { key => Utils.tryTillSuccess {
 
           for {

@@ -18,7 +18,6 @@ object Config {
 
   trait Environment extends Common.Environment {
 
-    val NUM_TAGS_TO_KEEP: Int
     val DEFAULT_LIMIT:    Int
 
     val FRONTEND_HOSTNAME:  String
@@ -31,7 +30,6 @@ object Config {
 
   class ActualEnvironment extends Common.ActualEnvironment with Environment {
 
-    val NUM_TAGS_TO_KEEP  = Utils.getEnvVarOptionInt("NUM_TAGS_TO_KEEP").getOrElse(Defaults.NUM_TAGS_TO_KEEP)
     val DEFAULT_LIMIT     = Utils.getEnvVarOptionInt("DEFAULT_LIMIT")   .getOrElse(Defaults.DEFAULT_LIMIT)
     
     val FRONTEND_HOSTNAME = Utils.getEnvVarOption("FRONTEND_HOSTNAME").getOrElse(Defaults.FRONTEND_HOSTNAME)
@@ -42,7 +40,6 @@ object Config {
     val LOG_BODY          = Utils.getEnvVarBoolean("LOG_BODY",    Defaults.LOG_BODY)
 
     private object Defaults {
-      val NUM_TAGS_TO_KEEP  = 200
       val DEFAULT_LIMIT     = 200
       
       val FRONTEND_HOSTNAME = "0.0.0.0"

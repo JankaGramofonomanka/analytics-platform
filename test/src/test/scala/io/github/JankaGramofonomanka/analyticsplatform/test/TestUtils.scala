@@ -74,7 +74,7 @@ object TestUtils {
   def getOps[F[_]: Async](interface: StorageInterface[F]): (FrontendOps[F], AggregateProcessorOps[F]) = {
     implicit val env = MockEnv
     val frontend            = new FrontendOps[F](interface.profiles, interface.aggregates, interface.publisher)
-    val aggregateProcessor  = new AggregateProcessorOps[F](interface.aggregates, interface.subscriber)
+    val aggregateProcessor  = new AggregateProcessorOps[F](interface.profiles, interface.aggregates, interface.subscriber)
     (frontend, aggregateProcessor)
   }
 
