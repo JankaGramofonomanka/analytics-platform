@@ -37,6 +37,7 @@ object TestUtils {
     val KAFKA_GROUP_ID          = "kafka-group"
     val KAFKA_CLIENT_ID         = "kafka-client"
     val KAFKA_MAX_POLL_RECORDS  = 500
+    val MAX_PARALLEL_WRITES     = 10
     
     val KAFKA_POLL_TIMEOUT_MILLIS = 1
 

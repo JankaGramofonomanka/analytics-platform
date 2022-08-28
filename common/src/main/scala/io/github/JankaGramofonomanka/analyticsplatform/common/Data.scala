@@ -211,9 +211,13 @@ object Data {
 
   final case class SimpleProfile(tags: Vector[UserTag]) extends AnyVal {
 
-    def update(tag: UserTag, tagsToKeep: Int): SimpleProfile = {
-      
-      val newTags = insertTagInOrder(tags, tag).take(tagsToKeep)
+    def addOne(tag: UserTag): SimpleProfile = SimpleProfile(insertTagInOrder(tags, tag))
+
+    def update(tag: UserTag, tagsToKeep: Int): SimpleProfile = addOne(tag).limit(tagsToKeep)
+    def limit(tagsToKeep: Int): SimpleProfile = SimpleProfile(tags.take(tagsToKeep))
+
+    def ++(other: SimpleProfile): SimpleProfile = {
+      val newTags = other.tags.foldLeft(tags)(insertTagInOrder)
       SimpleProfile(newTags)
     }
 
@@ -253,9 +257,11 @@ object Data {
 
   final case class AggregateValue(count: Int, sumPrice: Price) {
     def update(price: Price): AggregateValue = AggregateValue(count + 1, sumPrice + price)
+    def +(other: AggregateValue): AggregateValue = AggregateValue(count + other.count, sumPrice + other.sumPrice)
   }
   object AggregateValue {
     val default: AggregateValue = AggregateValue(0, Price(0))
+    def fromTag(tag: UserTag): AggregateValue = default.update(tag.productInfo.price)
   }
 
 

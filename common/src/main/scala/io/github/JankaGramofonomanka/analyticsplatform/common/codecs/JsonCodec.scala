@@ -157,6 +157,7 @@ object JsonCodec {
   }
 
 
+  // TODO Optimize, use tuple
   implicit val aggregateValueEncoder: Encoder[AggregateValue] = deriveConfiguredEncoder[AggregateValue]
   implicit val aggregateValueDecoder: Decoder[AggregateValue] = deriveConfiguredDecoder[AggregateValue]
   

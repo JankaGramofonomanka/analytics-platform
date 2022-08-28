@@ -8,7 +8,7 @@ object Topic {
   }
 
   trait Subscriber[F[_], T] {
-    def subscribe: Stream[F, T]
+    def subscribe: Stream[F, Seq[T]]
   }
 }
 

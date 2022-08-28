@@ -21,7 +21,7 @@ object Mock {
 
     private def tryUpdate[K, V](key: K, value: TrackGen[V], map: Map[K, TrackGen[V]]): IO[Boolean]
 
-      // TODO does this guarantee atomic execution?
+      // TODO make this atomic
       = IO.delay {
         val newValue = TrackGen(value.value, value.generation + 1)
         val old = map.get(key)
@@ -84,9 +84,9 @@ object Mock {
         } yield tag.toOption
       }
       
-      def subscribe: Stream[IO, UserTag] = {
+      def subscribe: Stream[IO, Seq[UserTag]] = {
       
-        getTag.unNone.repeat
+        getTag.unNone.repeat.map(t => Seq(t))
       }
     }
 

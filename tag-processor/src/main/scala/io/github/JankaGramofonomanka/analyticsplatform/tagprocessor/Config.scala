@@ -21,6 +21,7 @@ object Config {
     val KAFKA_CLIENT_ID:            String
     val KAFKA_POLL_TIMEOUT_MILLIS:  Long
     val KAFKA_MAX_POLL_RECORDS:     Int
+    val MAX_PARALLEL_WRITES:        Int
     
   }
 
@@ -42,6 +43,10 @@ object Config {
                                       .getEnvVarOptionInt("KAFKA_MAX_POLL_RECORDS")
                                       .getOrElse(Defaults.KAFKA_MAX_POLL_RECORDS)
 
+    val MAX_PARALLEL_WRITES       = Utils
+                                      .getEnvVarOptionInt("MAX_PARALLEL_WRITES")
+                                      .getOrElse(Defaults.MAX_PARALLEL_WRITES)
+
     
     private object Defaults {
       val NUM_TAGS_TO_KEEP          = 200
@@ -49,6 +54,7 @@ object Config {
       val KAFKA_CLIENT_ID           = "consumer"
       val KAFKA_POLL_TIMEOUT_MILLIS = 1000
       val KAFKA_MAX_POLL_RECORDS    = 500
+      val MAX_PARALLEL_WRITES       = 10
     }
     
   }

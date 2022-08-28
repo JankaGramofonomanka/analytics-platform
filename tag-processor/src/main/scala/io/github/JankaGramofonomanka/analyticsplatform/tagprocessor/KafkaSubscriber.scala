@@ -15,7 +15,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Envir
 class KafkaSubscriber(consumer: KafkaConsumer[Nothing, UserTag])(implicit env: Environment)
 extends Topic.Subscriber[IO, UserTag] {
   
-  def subscribe: Stream[IO, UserTag] = Stream.evalSeq {
+  def subscribe: Stream[IO, Seq[UserTag]] = Stream.eval {
   
     IO.delay {
       val records = consumer.poll(Duration.ofMillis(env.KAFKA_POLL_TIMEOUT_MILLIS))

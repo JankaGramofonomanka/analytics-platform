@@ -61,4 +61,14 @@ object Utils {
     success <- tryOnce
     _ <- if (success) pure[F, Unit](()) else tryTillSuccess(tryOnce)
   } yield ()
+
+  def curry[A, B, C](f: ((A, B)) => C): (A, B) => C = (a, b) => f((a, b))
+  def uncurry[A, B, C](f: (A, B) => C): ((A, B)) => C = t => f(t._1, t._2)
+
+  def updateMap[K, V](f: V => V)(map: Map[K, V])(key: K, default: V): Map[K, V] = {
+    map.get(key) match {
+      case None => map.updated(key, default)
+      case Some(value) => map.updated(key, f(value))
+    }
+  }
 }
