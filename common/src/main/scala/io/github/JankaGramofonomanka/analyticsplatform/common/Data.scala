@@ -264,10 +264,28 @@ object Data {
     def fromTag(tag: UserTag): AggregateValue = default.update(tag.productInfo.price)
   }
 
+  // Aggregated Views and Buys
+  final case class AggregateVB(views: AggregateValue, buys: AggregateValue) {
+    def update(action: Action, price: Price): AggregateVB = action match {
+      case VIEW => AggregateVB(views.update(price), buys)
+      case BUY  => AggregateVB(views, buys.update(price))
+    }
+
+    def +(other: AggregateVB): AggregateVB = AggregateVB(views + other.views, buys + other.buys)
+
+    def getValue(action: Action): AggregateValue = action match {
+      case VIEW => views
+      case BUY  => buys
+    }
+  }
+  object AggregateVB {
+    val default: AggregateVB = AggregateVB(AggregateValue.default, AggregateValue.default)
+    def fromTag(tag: UserTag): AggregateVB = default.update(tag.action, tag.productInfo.price)
+  }
+
 
   final case class AggregateKey(
     bucket:     Bucket,
-    action:     Action,
     origin:     Option[Origin],
     brandId:    Option[BrandId],
     categoryId: Option[CategoryId],
@@ -286,11 +304,11 @@ object Data {
         optOrigin     <- someAndNone(tag.origin)
         optBrandId    <- someAndNone(tag.productInfo.brandId)
         optCategoryId <- someAndNone(tag.productInfo.categoryId)
-      } yield AggregateKey(bucket, tag.action, optOrigin, optBrandId, optCategoryId)
+      } yield AggregateKey(bucket, optOrigin, optBrandId, optCategoryId)
     }
 
     def fromFields(bucket: Bucket, fields: AggregateFields): AggregateKey
-      = AggregateKey(bucket, fields.action, fields.origin, fields.brandId, fields.categoryId)
+      = AggregateKey(bucket, fields.origin, fields.brandId, fields.categoryId)
   }
 
   type Generation = Int

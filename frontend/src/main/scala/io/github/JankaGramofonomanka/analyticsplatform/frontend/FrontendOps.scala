@@ -9,7 +9,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 
 class FrontendOps[F[_]: Sync](
   profiles:   KeyValueDB[F, Cookie, SimpleProfile],
-  aggregates: KeyValueDB[F, AggregateKey, AggregateValue],
+  aggregates: KeyValueDB[F, AggregateKey, AggregateVB],
   tagsToAggregate: Topic.Publisher[F, UserTag],
 ) {
   
@@ -28,10 +28,11 @@ class FrontendOps[F[_]: Sync](
       val buckets = timeRange.getBuckets
       val keys = buckets.map(bucket => AggregateKey.fromFields(bucket, fields))
       for {
-        aggregateValues <- keys.traverse { key => aggregates.get(key).map(_.value) }
+        aggregateVBs <- keys.traverse { key => aggregates.get(key).map(_.value) }
         
         values = for {
-          (bucket, value) <- buckets.zip(aggregateValues)
+          (bucket, vb) <- buckets.zip(aggregateVBs)
+          value = vb.getValue(fields.action)
         } yield AggregateItem(bucket, value)
 
       } yield Aggregates(fields, values)

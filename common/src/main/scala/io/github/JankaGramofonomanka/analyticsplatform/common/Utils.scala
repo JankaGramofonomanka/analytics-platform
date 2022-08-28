@@ -65,6 +65,9 @@ object Utils {
   def curry[A, B, C](f: ((A, B)) => C): (A, B) => C = (a, b) => f((a, b))
   def uncurry[A, B, C](f: (A, B) => C): ((A, B)) => C = t => f(t._1, t._2)
 
+  def curry4[A, B, C, D, E](f: ((A, B, C, D)) => E): (A, B, C, D) => E = (a, b, c, d) => f((a, b, c, d))
+  def uncurry4[A, B, C, D, E](f: (A, B, C, D) => E): ((A, B, C, D)) => E = t => f(t._1, t._2, t._3, t._4)
+
   def updateMap[K, V](f: V => V)(map: Map[K, V])(key: K, default: V): Map[K, V] = {
     map.get(key) match {
       case None => map.updated(key, default)

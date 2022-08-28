@@ -21,21 +21,23 @@ object Mock {
 
     private def tryUpdate[K, V](key: K, value: TrackGen[V], map: Map[K, TrackGen[V]]): IO[Boolean]
 
-      // TODO make this atomic
       = IO.delay {
-        val newValue = TrackGen(value.value, value.generation + 1)
-        val old = map.get(key)
-        old match {
-          case None => {
-              map.put(key, newValue)
-              true
-            }
-          case Some(old) => {
-            if (old.generation == value.generation) {
-              map.put(key, newValue) 
-              true
-            } else {
-              false
+
+        synchronized {
+          val newValue = TrackGen(value.value, value.generation + 1)
+          val old = map.get(key)
+          old match {
+            case None => {
+                map.put(key, newValue)
+                true
+              }
+            case Some(old) => {
+              if (old.generation == value.generation) {
+                map.put(key, newValue) 
+                true
+              } else {
+                false
+              }
             }
           }
         }

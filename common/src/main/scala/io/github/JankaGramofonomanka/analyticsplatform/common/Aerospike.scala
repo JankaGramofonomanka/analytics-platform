@@ -87,17 +87,17 @@ object Aerospike {
     
 
     
-    object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateValue] {
+    object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateVB] {
 
-      def get(key: AggregateKey): IO[TrackGen[AggregateValue]] = for {
+      def get(key: AggregateKey): IO[TrackGen[AggregateVB]] = for {
         
         bytes <- getBytes(Config.aggregatesNamespace, codec.encodeAggregateKey(key), Config.aggregateBinName)
-        decoded = bytes.flatMap(bytes => codec.decodeAggregateValue(bytes)).value
+        decoded = bytes.flatMap(bytes => codec.decodeAggregateVB(bytes)).value
 
-      } yield decoded.map(_.getOrElse(AggregateValue.default))
+      } yield decoded.map(_.getOrElse(AggregateVB.default))
 
-      def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean] = {
-        val bin = new Bin(Config.aggregateBinName.value, codec.encodeAggregateValue(value.value))
+      def update(key: AggregateKey, value: TrackGen[AggregateVB]): IO[Boolean] = {
+        val bin = new Bin(Config.aggregateBinName.value, codec.encodeAggregateVB(value.value))
         putBin(Config.aggregatesNamespace, codec.encodeAggregateKey(key), bin, value.generation)
       }  
     }

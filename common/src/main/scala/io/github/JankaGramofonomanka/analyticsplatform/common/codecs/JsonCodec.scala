@@ -7,6 +7,7 @@ import io.circe.generic.extras.semiauto._
 
 
 import io.github.JankaGramofonomanka.analyticsplatform.common.Data._
+import io.github.JankaGramofonomanka.analyticsplatform.common.Utils
 import io.github.JankaGramofonomanka.analyticsplatform.common.Config
 
 object JsonCodec {
@@ -141,14 +142,9 @@ object JsonCodec {
     
     def apply(key: AggregateKey): Json = {
       val bucketJson = key.bucket.getSeconds.asJson
-      val actionJson = key.action match {
-        case BUY  => 1.asJson
-        case VIEW => 2.asJson
-      }
       Json.arr(
         bucketJson,
-        actionJson,
-        
+
         key.origin    .map(_.asJson).getOrElse(noneJson),
         key.brandId   .map(_.asJson).getOrElse(noneJson),
         key.categoryId.map(_.asJson).getOrElse(noneJson),
@@ -157,9 +153,24 @@ object JsonCodec {
   }
 
 
-  // TODO Optimize, use tuple
   implicit val aggregateValueEncoder: Encoder[AggregateValue] = deriveConfiguredEncoder[AggregateValue]
   implicit val aggregateValueDecoder: Decoder[AggregateValue] = deriveConfiguredDecoder[AggregateValue]
+
+  implicit val aggregateVBEncoder: Encoder[AggregateVB]
+    = Encoder.encodeTuple4[Int, Int, Int, Int].contramap[AggregateVB] {
+      vb => (vb.views.count, vb.views.sumPrice.value, vb.buys.count, vb.views.sumPrice.value)
+    }
+    
+  implicit val aggregateVBDecoder: Decoder[AggregateVB]
+    = Decoder.decodeTuple4[Int, Int, Int, Int].map {
+      Utils.uncurry4[Int, Int, Int, Int, AggregateVB] {
+        (vCount: Int, vSumPrice: Int, bCount: Int, bSumPrice: Int) => AggregateVB(
+          AggregateValue(vCount, Price(vSumPrice)),
+          AggregateValue(bCount, Price(bSumPrice)),
+        )
+      }
+    }
+    
   
 }
 

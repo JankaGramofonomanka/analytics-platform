@@ -20,7 +20,7 @@ object Server {
 
   def stream[F[_]: Async](
     profiles:         KeyValueDB[F, Cookie, SimpleProfile],
-    aggregates:       KeyValueDB[F, AggregateKey, AggregateValue],
+    aggregates:       KeyValueDB[F, AggregateKey, AggregateVB],
     tagsToAggregate:  Topic.Publisher[F, UserTag],
   )(implicit
     env: Config.Environment,

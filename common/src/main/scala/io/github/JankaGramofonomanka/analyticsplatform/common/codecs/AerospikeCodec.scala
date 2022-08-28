@@ -24,11 +24,11 @@ object AerospikeCodec {
   def decodeProfile(bytes: Array[Byte]): Option[SimpleProfile]
     = decodeJson[SimpleProfile](bytes)
 
-  def encodeAggregateValue(aggregateValue: AggregateValue): Array[Byte]
-    = compress(aggregateValue.asJson.noSpaces)
+  def encodeAggregateVB(aggregateVB: AggregateVB): Array[Byte]
+    = compress(aggregateVB.asJson.noSpaces)
   
-  def decodeAggregateValue(bytes: Array[Byte]): Option[AggregateValue]
-    = decodeJson[AggregateValue](bytes)
+  def decodeAggregateVB(bytes: Array[Byte]): Option[AggregateVB]
+    = decodeJson[AggregateVB](bytes)
   
   def encodeAggregateKey(key: AggregateKey): String = key.asJson.noSpaces
 
