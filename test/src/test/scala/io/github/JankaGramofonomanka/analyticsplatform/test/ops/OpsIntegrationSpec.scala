@@ -17,12 +17,12 @@ class OpsIntegrationSpec extends AnyFreeSpec {
 
     val (frontend, proc) = TestUtils.getOps[IO](interface)
 
-    val computation: IO[(PrettyProfile, Aggregates, Aggregates, Aggregates)] = for {
+    val computation: IO[(Profile, Aggregates, Aggregates, Aggregates)] = for {
       _ <- frontend.storeTag(Case1.tagRS)
       _ <- frontend.storeTag(Case1.tagWO1)
       _ <- frontend.storeTag(Case1.tagWO2)
 
-      _ <- proc.processTags.take(3).compile.drain
+      _ <- proc.processTags.take(3*9).compile.drain
 
       aggregatesRS  <- frontend.getAggregates(Case1.timeRange, Case1.fieldsRS)
       aggregatesWO  <- frontend.getAggregates(Case1.timeRange, Case1.fieldsWO)
@@ -34,10 +34,10 @@ class OpsIntegrationSpec extends AnyFreeSpec {
     val (profile, aggregatesRS, aggregatesWO, aggregatesAll) = computation.unsafeRunSync()
 
     "stored tags can be retrieved" in {
-      val simple = profile.simplify
-      assert(simple.tags.contains(Case1.tagRS))
-      assert(simple.tags.contains(Case1.tagWO1))
-      assert(simple.tags.contains(Case1.tagWO2))
+      
+      assert(TestUtils.getTags(Case1.action, profile).contains(Case1.tagRS))
+      assert(TestUtils.getTags(Case1.action, profile).contains(Case1.tagWO1))
+      assert(TestUtils.getTags(Case1.action, profile).contains(Case1.tagWO2))
     }
 
     "tags are aggregated" - {
@@ -66,26 +66,26 @@ class OpsIntegrationSpec extends AnyFreeSpec {
 
     val (frontend, proc) = TestUtils.getOps[IO](interface)
 
-    val computation: IO[(SimpleProfile, SimpleProfile)] = for {
+    val computation: IO[(Profile, Profile)] = for {
       _ <- frontend.storeTag(Case2.tag1)
       _ <- frontend.storeTag(Case2.tag2)
-      _ <- proc.processTags.take(2).compile.drain
+      _ <- proc.processTags.take(2*9).compile.drain
 
       profile1 <- frontend.getProfile(Case2.cookie1, Case2.timeRange, 2)
       profile2 <- frontend.getProfile(Case2.cookie2, Case2.timeRange, 2)
       
-    } yield (profile1.simplify, profile2.simplify)
+    } yield (profile1, profile2)
 
     val (profile1, profile2) = computation.unsafeRunSync()
 
     "tags are stored in the right profiles" in {
-      assert(profile1.tags.contains(Case2.tag1))
-      assert(profile2.tags.contains(Case2.tag2))
+      assert(TestUtils.getTags(Case2.action, profile1).contains(Case2.tag1))
+      assert(TestUtils.getTags(Case2.action, profile2).contains(Case2.tag2))
     }
     
     "tags are not stored in the wrong profiles" in {
-      assert(!profile1.tags.contains(Case2.tag2))
-      assert(!profile2.tags.contains(Case2.tag1))
+      assert(!TestUtils.getTags(Case2.action, profile1).contains(Case2.tag2))
+      assert(!TestUtils.getTags(Case2.action, profile2).contains(Case2.tag1))
     }
     
   }

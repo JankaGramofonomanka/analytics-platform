@@ -19,7 +19,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.frontend.codecs.EntityCod
 object Server {
 
   def stream[F[_]: Async](
-    profiles:         KeyValueDB[F, Cookie, SimpleProfile],
+    profiles:         KeyValueDB[F, Cookie, Profile],
     aggregates:       KeyValueDB[F, AggregateKey, AggregateVB],
     tagsToAggregate:  Topic.Publisher[F, UserTag],
   )(implicit
@@ -30,7 +30,6 @@ object Server {
 
     val httpApp = (Routes.routes(ops)).orNotFound
 
-    // With Middlewares in place
     val finalHttpApp = if (env.USE_LOGGER) Logger.httpApp(env.LOG_HEADERS, env.LOG_BODY)(httpApp) else httpApp
     
     for {

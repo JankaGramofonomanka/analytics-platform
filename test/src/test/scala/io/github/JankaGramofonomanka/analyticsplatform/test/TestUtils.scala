@@ -18,6 +18,20 @@ import io.github.JankaGramofonomanka.analyticsplatform.test.Mock
 
 object TestUtils {
 
+  def getTags(action: Action, profile: Profile): Vector[UserTag] = action match {
+    case VIEW => profile.views
+    case BUY  => profile.buys
+  }
+
+  def fromTags(cookie: Cookie, tags: Seq[UserTag]): Profile = {
+    val views = tags.filter(_.action == VIEW).toVector
+    val buys  = tags.filter(_.action == BUY).toVector
+    Profile(cookie, views, buys)
+  }
+
+  def profileContains(profile: Profile, tag: UserTag): Boolean
+    = profile.views.contains(tag) || profile.buys.contains(tag)
+
   object MockEnv extends FrontendEnv with ProcEnv {
     val NUM_TAGS_TO_KEEP  = 200
     val DEFAULT_LIMIT     = 200
@@ -31,6 +45,7 @@ object TestUtils {
     val AEROSPIKE_AGGREGATES_BIN        = ""
     val AEROSPIKE_COMMIT_LEVEL          = "ALL"
     val AEROSPIKE_GENERATION_POLICY     = "EQ"
+    val AEROSPIKE_BUCKETS_PER_KEY       = 10
 
     val KAFKA_TOPIC             = "topic"
     val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
@@ -50,8 +65,8 @@ object TestUtils {
   }
 
   final case class Storage(
-    profiles:   Map[Cookie, TrackGen[SimpleProfile]],
-    aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
+    profiles:   Map[Cookie, TrackGen[Profile]],
+    aggregates: Map[AggregateKey, TrackGen[AggregateVB]],
     queue:      Queue[UserTag],
   )
 
@@ -60,8 +75,8 @@ object TestUtils {
   }
 
   final case class StorageInterface[F[_]](
-    profiles:   KeyValueDB[F, Cookie, SimpleProfile],
-    aggregates: KeyValueDB[F, AggregateKey, AggregateValue],
+    profiles:   KeyValueDB[F, Cookie, Profile],
+    aggregates: KeyValueDB[F, AggregateKey, AggregateVB],
     publisher:  Topic.Publisher[F, UserTag],
     subscriber: Topic.Subscriber[F, UserTag],
   )

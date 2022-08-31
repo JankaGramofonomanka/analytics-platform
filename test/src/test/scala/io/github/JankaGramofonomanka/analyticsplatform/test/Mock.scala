@@ -15,8 +15,8 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.Topic.{Publisher, 
 object Mock {
 
   class DB(
-    private val profiles:   Map[Cookie, TrackGen[SimpleProfile]],
-    private val aggregates: Map[AggregateKey, TrackGen[AggregateValue]],
+    private val profiles:   Map[Cookie, TrackGen[Profile]],
+    private val aggregates: Map[AggregateKey, TrackGen[AggregateVB]],
   ) {
 
     private def tryUpdate[K, V](key: K, value: TrackGen[V], map: Map[K, TrackGen[V]]): IO[Boolean]
@@ -43,23 +43,23 @@ object Mock {
         }
       }
 
-    object Profiles extends KeyValueDB[IO, Cookie, SimpleProfile] {
+    object Profiles extends KeyValueDB[IO, Cookie, Profile] {
       
-      def get(cookie: Cookie): IO[TrackGen[SimpleProfile]]
-        = IO.delay { profiles.get(cookie).getOrElse(TrackGen.default(SimpleProfile.default)) }
+      def get(cookie: Cookie): IO[TrackGen[Profile]]
+        = IO.delay { profiles.get(cookie).getOrElse(TrackGen.default(Profile.default(cookie))) }
 
-      def update(cookie: Cookie, profile: TrackGen[SimpleProfile]): IO[Boolean]
+      def update(cookie: Cookie, profile: TrackGen[Profile]): IO[Boolean]
         = tryUpdate(cookie, profile, profiles)
 
     }
     
-    object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateValue] {
+    object Aggregates extends KeyValueDB[IO, AggregateKey, AggregateVB] {
       
-      def get(key: AggregateKey): IO[TrackGen[AggregateValue]]
-        = IO.delay { aggregates.get(key).getOrElse(TrackGen.default(AggregateValue.default)) }
+      def get(key: AggregateKey): IO[TrackGen[AggregateVB]]
+        = IO.delay { aggregates.get(key).getOrElse(TrackGen.default(AggregateVB.default)) }
       
-      def update(key: AggregateKey, value: TrackGen[AggregateValue]): IO[Boolean]
-        = tryUpdate(key, value, aggregates)  
+      def update(key: AggregateKey, vb: TrackGen[AggregateVB]): IO[Boolean]
+        = tryUpdate(key, vb, aggregates)  
     }
   }
 

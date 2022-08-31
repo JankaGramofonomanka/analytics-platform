@@ -15,7 +15,6 @@ object KafkaCodec {
 
     def serialize(topic: String, data: UserTag): Array[Byte] = {
 
-      // TODO use compression etc.
       val asString = data.asJson.noSpaces
       stringSerializer.serialize(topic, asString)
     }

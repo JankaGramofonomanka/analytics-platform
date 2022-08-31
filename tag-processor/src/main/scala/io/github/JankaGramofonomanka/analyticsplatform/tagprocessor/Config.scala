@@ -54,7 +54,7 @@ object Config {
       val KAFKA_CLIENT_ID           = "consumer"
       val KAFKA_POLL_TIMEOUT_MILLIS = 1000
       val KAFKA_MAX_POLL_RECORDS    = 500
-      val MAX_PARALLEL_WRITES       = 10
+      val MAX_PARALLEL_WRITES       = 6
     }
     
   }

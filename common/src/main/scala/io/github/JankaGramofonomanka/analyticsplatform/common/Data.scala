@@ -164,7 +164,7 @@ object Data {
   final case class CategoryId(value: String)  extends AnyVal
 
   final case class Country(value: String)   extends AnyVal
-  final case class Price(value: Int)        extends AnyVal {
+  final case class Price(value: Long)        extends AnyVal {
     def +(other: Price) = Price(value + other.value)
   }
   final case class ProductId(value: Int) extends AnyVal
@@ -209,21 +209,20 @@ object Data {
     price:      Price,
   )
 
-  final case class SimpleProfile(tags: Vector[UserTag]) extends AnyVal {
-
-    def addOne(tag: UserTag): SimpleProfile = SimpleProfile(insertTagInOrder(tags, tag))
-
-    def update(tag: UserTag, tagsToKeep: Int): SimpleProfile = addOne(tag).limit(tagsToKeep)
-    def limit(tagsToKeep: Int): SimpleProfile = SimpleProfile(tags.take(tagsToKeep))
-
-    def ++(other: SimpleProfile): SimpleProfile = {
-      val newTags = other.tags.foldLeft(tags)(insertTagInOrder)
-      SimpleProfile(newTags)
+  final case class Profile(cookie: Cookie, views: Vector[UserTag], buys: Vector[UserTag]) {
+    
+    def addOne(tag: UserTag): Profile = tag.action match {
+      case VIEW => Profile(cookie, insertTagInOrder(views, tag), buys)
+      case BUY  => Profile(cookie, views, insertTagInOrder(buys, tag))
     }
 
-    def prettify(cookie: Cookie): PrettyProfile = {
-      val (views, buys) = tags.partition(_.action == VIEW)
-      PrettyProfile(cookie, views, buys)
+    def limit(tagsToKeep: Int): Profile = Profile(cookie, views.take(tagsToKeep), buys.take(tagsToKeep))
+
+    // TODO keep this? (cookies might differ and what then?)
+    def ++(other: Profile): Profile = {
+      val newViews  = other.views .foldLeft(views)(insertTagInOrder)
+      val newBuys   = other.buys  .foldLeft(buys) (insertTagInOrder)
+      Profile(cookie, newViews, newBuys)
     }
 
     private def insertTagInOrder(tags: Vector[UserTag], tag: UserTag): Vector[UserTag] = {
@@ -232,25 +231,18 @@ object Data {
     }
   }
 
-  object SimpleProfile {
-    val default: SimpleProfile = SimpleProfile(Vector())
-  }
-
-  final case class PrettyProfile(cookie: Cookie, views: Vector[UserTag], buys: Vector[UserTag]) {
-    def simplify: SimpleProfile = SimpleProfile(sortTags(views ++ buys))
-
-    private def sortTags(tags: Vector[UserTag]): Vector[UserTag]
-      = tags.sortWith((t1, t2) => t1.time.isAfter(t2.time))
+  object Profile {
+    def default(cookie: Cookie): Profile = Profile(cookie, Vector(), Vector())
+    def fromTag(tag: UserTag): Profile = default(tag.cookie).addOne(tag)
   }
 
   final case class Aggregates(fields: AggregateFields, items: Vector[AggregateItem])
   final case class AggregateFields(
     action: Action,
-    count: Boolean,
-    sumPrice: Boolean,
     origin: Option[Origin],
     brandId: Option[BrandId],
     categoryId: Option[CategoryId],
+    aggregates: List[Aggregate],
   )
 
   final case class AggregateItem(bucket: Bucket, value: AggregateValue)
@@ -283,13 +275,27 @@ object Data {
     def fromTag(tag: UserTag): AggregateVB = default.update(tag.action, tag.productInfo.price)
   }
 
-
   final case class AggregateKey(
     bucket:     Bucket,
     origin:     Option[Origin],
     brandId:    Option[BrandId],
     categoryId: Option[CategoryId],
-  )
+  ) {
+    private def getBatchMinutesOfHour(batchSize: Int): Int = bucket.toDateTime.getMinute / batchSize
+    
+    def getBatchKey(batchSize: Int): AggregateKey = {
+      
+      val batchMinutesOfHour = getBatchMinutesOfHour(batchSize)
+      val batchBucket = Bucket(bucket.toDateTime.withMinute(batchMinutesOfHour))
+      AggregateKey(batchBucket, origin, brandId, categoryId)
+    }
+
+    def getBatchOffset(batchSize: Int): Int = {
+      val minutesOfHour = bucket.toDateTime.getMinute
+      val batchMinutesOfHour = getBatchMinutesOfHour(batchSize)
+      minutesOfHour - batchMinutesOfHour
+    }
+  }
   
   object AggregateKey {
     private def someAndNone[A](a: A): List[Option[A]] = List(Some(a), None)

@@ -48,15 +48,15 @@ object ExampleData {
     val userTagV  = UserTag(timestamp, cookie, country, device, VIEW,   origin, productInfo)
     val userTagB  = UserTag(timestamp, cookie, country, device, BUY,    origin, productInfo)
     
-    val simpleProfile = SimpleProfile(Vector(userTagV, userTagB))
-    val prettyProfile = PrettyProfile(cookie, Vector(userTagV), Vector(userTagB))
+    val profile = Profile(cookie, Vector(userTagV), Vector(userTagB))
 
-    val aggregateFields = AggregateFields(action, true, true, Some(origin), Some(brandId), Some(categoryId))
+    val aggregateFields = AggregateFields(action, Some(origin), Some(brandId), Some(categoryId), List(SUM_PRICE, COUNT))
 
     private val count = 1
     val aggregateValue  = AggregateValue(count, price)
+    val aggregateVB     = AggregateVB(aggregateValue, aggregateValue + aggregateValue)
 
-    val aggregateKey    = AggregateKey(bucket, action, Some(origin), Some(brandId), Some(categoryId))
+    val aggregateKey    = AggregateKey(bucket, Some(origin), Some(brandId), Some(categoryId))
     
     val aggregateItem   = AggregateItem(bucket, aggregateValue)
     val aggregates      = Aggregates(aggregateFields, Vector(aggregateItem))
@@ -92,7 +92,7 @@ object ExampleData {
     val aggregatesJson = json"""{
       "columns": ["1m_bucket", "action", "origin", "brand_id", "category_id", "sum_price", "count"],
       "rows": [
-        [$bucketStr, ${Action.encode(action)}, ${origin.value}, ${brandId.value}, ${categoryId.value}, ${price.value}, $count]
+        [$bucketStr, ${Action.encode(action)}, ${origin.value}, ${brandId.value}, ${categoryId.value}, ${price.value.toString}, ${count.toString}]
       ]
     }"""
 
@@ -120,14 +120,14 @@ object ExampleData {
     val aggregatesJson = json"""{
       "columns": ["1m_bucket", "action", "brand_id", "sum_price", "count"],
       "rows": [
-        ["2022-03-01T00:05:00", "BUY", "Nike", 1000, 3],
-        ["2022-03-01T00:06:00", "BUY", "Nike", 1500, 4],
-        ["2022-03-01T00:07:00", "BUY", "Nike", 1200, 2]
+        ["2022-03-01T00:05:00", "BUY", "Nike", "1000", "3"],
+        ["2022-03-01T00:06:00", "BUY", "Nike", "1500", "4"],
+        ["2022-03-01T00:07:00", "BUY", "Nike", "1200", "2"]
       ]
     }"""
 
     val aggregates = Aggregates(
-      AggregateFields(BUY, true, true, None, Some(BrandId("Nike")), None),
+      AggregateFields(BUY, None, Some(BrandId("Nike")), None, List(SUM_PRICE, COUNT)),
       Vector(
         AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:05:00")), AggregateValue(3, Price(1000))),
         AggregateItem(Bucket(LocalDateTime.parse("2022-03-01T00:06:00")), AggregateValue(4, Price(1500))),
@@ -151,19 +151,19 @@ object ExampleData {
     val productInfoWO1  = General.productInfo.copy(brandId = brandWO, price = priceWO1)
     val productInfoWO2  = General.productInfo.copy(brandId = brandWO, price = priceWO2)
 
-    val tagRS = General.userTag.copy(productInfo = productInfoRS)
-    val tagWO1 = General.userTag.copy(productInfo = productInfoWO1)
-    val tagWO2 = General.userTag.copy(productInfo = productInfoWO2)
+    val action = VIEW
+    val tagRS = General.userTag.copy(productInfo = productInfoRS, action=action)
+    val tagWO1 = General.userTag.copy(productInfo = productInfoWO1, action=action)
+    val tagWO2 = General.userTag.copy(productInfo = productInfoWO2, action=action)
 
     val cookie = tagRS.cookie
     val bucket = tagRS.time.getBucket
-    val action = tagRS.action
 
-    val keyAll = AggregateKey(bucket, action, None, None, None)
+    val keyAll = AggregateKey(bucket, None, None, None)
     val keyRS = keyAll.copy(brandId = Some(General.Brands.reardenSteel))
     val keyWO = keyAll.copy(brandId = Some(General.Brands.wyattOil))
 
-    val fieldsAll = AggregateFields(action, true, true, None, None, None)
+    val fieldsAll = AggregateFields(action, None, None, None, List(SUM_PRICE, COUNT))
     val fieldsRS  = fieldsAll.copy(brandId = Some(Case1.brandRS))
     val fieldsWO  = fieldsAll.copy(brandId = Some(Case1.brandWO))
     
@@ -173,6 +173,10 @@ object ExampleData {
     val expectedAggregateValueAll = AggregateValue(3, priceRS + priceWO1 + priceWO2)
     val expectedAggregateValueRS = AggregateValue(1, priceRS)
     val expectedAggregateValueWO = AggregateValue(2, priceWO1 + priceWO2)
+
+    val expectedAggregateVBAll  = AggregateVB.default.copy(views = expectedAggregateValueAll)
+    val expectedAggregateVBRS   = AggregateVB.default.copy(views = expectedAggregateValueRS)
+    val expectedAggregateVBWO   = AggregateVB.default.copy(views = expectedAggregateValueWO)
     
   }
 
@@ -180,6 +184,7 @@ object ExampleData {
     val cookie1 = Cookie("1")
     val cookie2 = Cookie("2")
 
+    val action = General.userTag.action
     val tag1 = General.userTag.copy(cookie = cookie1)
     val tag2 = General.userTag.copy(cookie = cookie2)
 

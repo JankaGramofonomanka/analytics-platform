@@ -26,10 +26,10 @@ object Routes {
 
       case GET -> Root / "health" => Ok()
 
-      case  req @ POST -> Root / "user_tags"
+      case req @ POST -> Root / "user_tags"
         => (req.as[UserTag] flatMap ops.storeTag _) *> NoContent()
     
-      case  POST -> Root / "user_profiles" / CookieVar(cookie)
+      case POST -> Root / "user_profiles" / CookieVar(cookie)
                                           :? TimeRangeMatcher(timeRange)
                                           +& OptLimitMatcher(optLimit)
         => {
@@ -37,7 +37,7 @@ object Routes {
           ops.getProfile(cookie, timeRange, limit) flatMap (x => Ok(x))
         }
         
-      case  POST -> Root / "aggregates" :? TimeRangeMatcher(timeRange)
+      case POST -> Root / "aggregates" :? TimeRangeMatcher(timeRange)
                                         +& ActionMatcher(action)
                                         +& AggregatesMatcher(aggregates)
                                         +& OptOriginMatcher(origin)
@@ -46,15 +46,12 @@ object Routes {
         => aggregates match {
 
           case Valid(aggregates) => {
-            val count     = if (aggregates.contains(COUNT))     true else false
-            val sumPrice  = if (aggregates.contains(SUM_PRICE)) true else false
             val fields = AggregateFields(
               action,
-              count,
-              sumPrice,
               origin,
               brandId,
               categoryId,
+              aggregates,
             )
             ops.getAggregates(timeRange, fields) flatMap (x => Ok(x))
           }

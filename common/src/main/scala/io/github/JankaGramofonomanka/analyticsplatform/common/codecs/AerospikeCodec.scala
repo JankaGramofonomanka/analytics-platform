@@ -19,10 +19,10 @@ object AerospikeCodec {
     decode[A](str).toOption
   }
 
-  def encodeProfile(profile: SimpleProfile): Array[Byte] = compress(profile.asJson.noSpaces)
+  def encodeProfile(profile: Profile): Array[Byte] = compress(profile.asJson.noSpaces)
 
-  def decodeProfile(bytes: Array[Byte]): Option[SimpleProfile]
-    = decodeJson[SimpleProfile](bytes)
+  def decodeProfile(bytes: Array[Byte]): Option[Profile]
+    = decodeJson[Profile](bytes)
 
   def encodeAggregateVB(aggregateVB: AggregateVB): Array[Byte]
     = compress(aggregateVB.asJson.noSpaces)

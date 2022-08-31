@@ -17,9 +17,9 @@ object Config {
     val AEROSPIKE_PROFILES_NAMESPACE:   String
     val AEROSPIKE_AGGREGATES_NAMESPACE: String
     val AEROSPIKE_PROFILES_BIN:         String
-    val AEROSPIKE_AGGREGATES_BIN:       String
     val AEROSPIKE_COMMIT_LEVEL:         String
     val AEROSPIKE_GENERATION_POLICY:    String
+    val AEROSPIKE_BUCKETS_PER_KEY:      Int
 
     val KAFKA_TOPIC:              String
     val KAFKA_BOOTSTRAP_SERVERS:  String
@@ -44,10 +44,6 @@ object Config {
     val AEROSPIKE_PROFILES_BIN          = Utils
                                             .getEnvVarOption("AEROSPIKE_PROFILES_BIN")
                                             .getOrElse(Defaults.AEROSPIKE_PROFILES_BIN)
-    val AEROSPIKE_AGGREGATES_BIN        = Utils
-                                            .getEnvVarOption("AEROSPIKE_AGGREGATES_BIN")
-                                            .getOrElse(Defaults.AEROSPIKE_AGGREGATES_BIN)
-
     val AEROSPIKE_COMMIT_LEVEL          = Utils
                                             .getEnvVarOption("AEROSPIKE_COMMIT_LEVEL")
                                             .getOrElse(Defaults.AEROSPIKE_COMMIT_LEVEL)
@@ -56,6 +52,9 @@ object Config {
                                             .getEnvVarOption("AEROSPIKE_GENERATION_POLICY")
                                             .getOrElse(Defaults.AEROSPIKE_GENERATION_POLICY)
 
+    val AEROSPIKE_BUCKETS_PER_KEY       = Utils
+                                            .getEnvVarOptionInt("AEROSPIKE_BUCKETS_PER_KEY")
+                                            .getOrElse(Defaults.AEROSPIKE_BUCKETS_PER_KEY)
     
     val KAFKA_TOPIC               = Utils
                                       .getEnvVarOption("KAFKA_TOPIC")
@@ -71,9 +70,9 @@ object Config {
       val AEROSPIKE_PROFILES_NAMESPACE    = "profiles"
       val AEROSPIKE_AGGREGATES_NAMESPACE  = "aggregates"
       val AEROSPIKE_PROFILES_BIN          = ""
-      val AEROSPIKE_AGGREGATES_BIN        = ""
       val AEROSPIKE_COMMIT_LEVEL          = "ALL"
       val AEROSPIKE_GENERATION_POLICY     = "EQ"
+      val AEROSPIKE_BUCKETS_PER_KEY       = 60
 
       val KAFKA_TOPIC               = "tags"
       val KAFKA_BOOTSTRAP_SERVERS   = "localhost:9092"

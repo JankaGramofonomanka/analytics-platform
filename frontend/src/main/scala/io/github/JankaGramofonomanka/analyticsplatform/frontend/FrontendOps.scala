@@ -8,17 +8,18 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.common.Topic
 
 class FrontendOps[F[_]: Sync](
-  profiles:   KeyValueDB[F, Cookie, SimpleProfile],
+  profiles:   KeyValueDB[F, Cookie, Profile],
   aggregates: KeyValueDB[F, AggregateKey, AggregateVB],
   tagsToAggregate: Topic.Publisher[F, UserTag],
 ) {
   
   def storeTag(tag: UserTag): F[Unit] = tagsToAggregate.publish(tag)
 
-  def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[PrettyProfile] = for {
+  def getProfile(cookie: Cookie, timeRange: TimeRange, limit: Limit): F[Profile] = for {
     profile <- profiles.get(cookie)
-    tags = profile.value.tags.filter(tag => timeRange.contains(tag.time)).take(limit)
-  } yield SimpleProfile(tags).prettify(cookie)
+    views = profile.value.views .filter(tag => timeRange.contains(tag.time)).take(limit)
+    buys  = profile.value.buys  .filter(tag => timeRange.contains(tag.time)).take(limit)
+  } yield Profile(cookie, views, buys)
 
   def getAggregates(
       timeRange:  TimeRange,

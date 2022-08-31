@@ -23,22 +23,22 @@ class TagProcessorOpsSpec extends AnyFreeSpec {
     storage.queue.addOne(Case1.tagWO1)
     storage.queue.addOne(Case1.tagWO2)
 
-    proc.processTags.take(3).compile.drain.unsafeRunSync()
+    proc.processTags.take(3*9).compile.drain.unsafeRunSync()
 
 
     "correctly processes one tag" in {
       val result = storage.aggregates.get(Case1.keyRS).map(_.value)
-      assert(result == Some(Case1.expectedAggregateValueRS))
+      assert(result == Some(Case1.expectedAggregateVBRS))
     }
     
     "correctly processes two tags" in {
       val result = storage.aggregates.get(Case1.keyWO).map(_.value)
-      assert(result == Some(Case1.expectedAggregateValueWO))
+      assert(result == Some(Case1.expectedAggregateVBWO))
     }
     
     "correctly processes tags with differend field values" in {
       val result = storage.aggregates.get(Case1.keyAll).map(_.value)
-      assert(result == Some(Case1.expectedAggregateValueAll))
+      assert(result == Some(Case1.expectedAggregateVBAll))
     }  
   }
   

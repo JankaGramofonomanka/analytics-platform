@@ -49,16 +49,15 @@ class JsonCodecSpec extends AnyFreeSpec {
     "`ProductId`"       in testJson[ProductId]      (General.productId)
     "`ProductInfo`"     in testJson[ProductInfo]    (General.productInfo)
     "`UserTag`"         in testJson[UserTag]        (General.userTag)
-    "`SimpleProfile`"   in testJson[SimpleProfile]  (General.simpleProfile)
-    "`PrettyProfile`"   in testJson[PrettyProfile]  (General.prettyProfile)
-    //"`AggregateKey`"    in testJson[AggregateKey]   (General.aggregateKey)
+    "`Profile`"         in testJson[Profile]        (General.profile)
     "`AggregateValue`"  in testJson[AggregateValue] (General.aggregateValue)
+    "`AggregateVB`"     in testJson[AggregateVB]    (General.aggregateVB)
   }
 
   "encoding" - {
-    "`UserTag`"       in testEncoding[UserTag]      (General.userTag,       General.userTagJson)
-    "`PrettyProfile`" in testEncoding[PrettyProfile](General.prettyProfile, General.profileJson)
-    "`Aggregates`"    in testEncoding[Aggregates]   (General.aggregates,    General.aggregatesJson)
+    "`UserTag`"     in testEncoding[UserTag]    (General.userTag,    General.userTagJson)
+    "`Profile`"     in testEncoding[Profile]    (General.profile,    General.profileJson)
+    "`Aggregates`"  in testEncoding[Aggregates] (General.aggregates, General.aggregatesJson)
     
     "examples from specification" - {
       "timestamp"   in testEncoding[Timestamp]  (Specification.timestamp,   Specification.timestampJson1)

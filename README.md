@@ -244,19 +244,20 @@ The app uses the following environment variables:
 | `AEROSPIKE_PROFILES_NAMESPACE`    | string          | "profiles"        | Aerospike namespace in which the profiles are stored                |
 | `AEROSPIKE_AGGREGATES_NAMESPACE`  | string          | "aggregates"      | Aerospike namespace in which the aggregates are stored              |
 | `AEROSPIKE_PROFILES_BIN`          | string          | "profile"         | Name of the bin of a record where profiles are stored               |
-| `AEROSPIKE_AGGREGATES_BIN`        | string          | "aggregate"       | Name of the bin of a record where aggregates are stored             |
 | `AEROSPIKE_COMMIT_LEVEL`          | MASTER / ALL    | ALL               | the queries to the database will be successfull whan committed on ALL nodes / MASTER node |
 | `AEROSPIKE_GENERATION_POLICY`     | EQ / GT / NONE  | EQ                | the queries to the database will be succesfull if the expected record generation is equal to (EQ) / greater then (GT) the actual generation / the queries will be always successfull (NONE) |
+| `AEROSPIKE_BUCKETS_PER_KEY`       | integer         | 60                | when set to `N`, `N` aggregated buckets will be stored under one key (each bucket in a separate bin). The bigger the `N`, the less memory, should be used by the database. More speciffically, the key will be determined by dividing the "minutes of hour" field of the bucket by `N`, this means any number above 60 will give the same result as 60, and any number between 30 and 59 should result in the same memory usage as 30. |
 | `KAFKA_TOPIC`                     | string          | "tags"            | Name of the topic where the events are published, to be aggregated  |
 | `KAFKA_BOOTSTRAP_SERVERS`         | string:integer  | "localhost:9092"  | Address of the kafka broker                                         |
 |                                   |                 |                   |                                                                     |
 | Only used by **tag-processor**:   |                 |                   |                                                                     |
-| `NUM_TAGS_TO_KEEP`        | integer         | 200                     | Maximum number of events to be stored per user                          |
-| `KAFKA_GROUP`             | string          | "tag-processors"        | Id of the consumer group to to which the tag processor belongs          |
-| `KAFKA_CONSUMER_ID`       | string          | "consumer"              | Id of the consumer                                                      |
-| `KAFKA_POLL_TIMEOUT`      | integer         | 1000                    | number of milliseconds passed to the `KafkaConsumer.poll` method        |
-| `KAFKA_MAX_POLL_RECORDS`  | integer         | 500                     | maximum number ofrecords that can be sent to the tag-processor at once  |
-|                           |                 |                         |                                                                         |
+| `NUM_TAGS_TO_KEEP`        | integer         | 200               | Maximum number of events to be stored per user                          |
+| `KAFKA_GROUP`             | string          | "tag-processors"  | Id of the consumer group to to which the tag processor belongs          |
+| `KAFKA_CONSUMER_ID`       | string          | "consumer"        | Id of the consumer                                                      |
+| `KAFKA_POLL_TIMEOUT`      | integer         | 1000              | number of milliseconds passed to the `KafkaConsumer.poll` method        |
+| `KAFKA_MAX_POLL_RECORDS`  | integer         | 500               | maximum number ofrecords that can be sent to the tag-processor at once  |
+|                           |                 |                   |                                                                         |
+| `MAX_PARALLEL_WRITES`     | integer         | 6                 | number of parrallel requests to the database                            |
 | Only used by **frontend**:  |               |           |                                                                                                     |
 | `DEFAULT_LIMIT`             | integer       | 200       | Default number of events to be returned in a `/user_profiles` request                               |
 | `FRONTEND_HOSTNAME`         | string        | "0.0.0.0" | Name of the host of the frontend app                                                                |

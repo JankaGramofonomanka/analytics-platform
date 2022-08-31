@@ -13,21 +13,21 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.KeyValueDB
 import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Environment
 
 class TagProcessorOps[F[_]: Async](
-  profiles:         KeyValueDB[F, Cookie, SimpleProfile],
+  profiles:         KeyValueDB[F, Cookie, Profile],
   aggregates:       KeyValueDB[F, AggregateKey, AggregateVB],
   tagsToAggregate:  Topic.Subscriber[F, UserTag],
 )(implicit env: Environment) {
 
-  private def mkProfiles(tags: Seq[UserTag]): Map[Cookie, SimpleProfile] = {
-    val processTag = (map: Map[Cookie, SimpleProfile], tag: UserTag) => {
-      Utils.updateMap[Cookie, SimpleProfile](_.addOne(tag))(map)(tag.cookie, SimpleProfile(Vector(tag)))
+  private def mkProfiles(tags: Seq[UserTag]): Map[Cookie, Profile] = {
+    val processTag = (map: Map[Cookie, Profile], tag: UserTag) => {
+      Utils.updateMap[Cookie, Profile](_.addOne(tag))(map)(tag.cookie, Profile.fromTag(tag))
     }
-    tags.foldLeft[Map[Cookie, SimpleProfile]](Map())(processTag)
+    tags.foldLeft[Map[Cookie, Profile]](Map())(processTag)
   }
 
-  private def mkProfilesStream(tags: Seq[UserTag]): Stream[F, (Cookie, SimpleProfile)]
+  private def mkProfilesStream(tags: Seq[UserTag]): Stream[F, (Cookie, Profile)]
     = Stream.evalSeq {
-      Utils.pure[F, Seq[(Cookie, SimpleProfile)]](mkProfiles(tags).toSeq)
+      Utils.pure[F, Seq[(Cookie, Profile)]](mkProfiles(tags).toSeq)
     }
 
   private def mkAggregates(tags: Seq[UserTag]): Map[AggregateKey, AggregateVB] = {
@@ -50,7 +50,7 @@ class TagProcessorOps[F[_]: Async](
       Utils.pure[F, Seq[(AggregateKey, AggregateVB)]](mkAggregates(tags).toSeq)
     }
 
-  private def tryUpdateProfile(cookie: Cookie, profile: SimpleProfile): F[Boolean] = for {
+  private def tryUpdateProfile(cookie: Cookie, profile: Profile): F[Boolean] = for {
     _ <- Utils.pure[F, Unit](())
     oldProfile <- profiles.get(cookie)
     newProfile = oldProfile.map(_ ++ profile).map(_.limit(env.NUM_TAGS_TO_KEEP))
@@ -65,7 +65,7 @@ class TagProcessorOps[F[_]: Async](
     result <- aggregates.update(key, newVB)
   } yield result
 
-  private val processProfile: ((Cookie, SimpleProfile)) => F[Unit]
+  private val processProfile: ((Cookie, Profile)) => F[Unit]
     = Utils.uncurry {
       (cookie, profile) => Utils.tryTillSuccess(tryUpdateProfile(cookie, profile))
     }
@@ -76,15 +76,15 @@ class TagProcessorOps[F[_]: Async](
     }
 
   private def processProfiles(tags: Seq[UserTag]): Stream[F, Unit]
-    = mkProfilesStream(tags).parEvalMap(env.MAX_PARALLEL_WRITES / 2)(processProfile)
-
+    = mkProfilesStream(tags).parEvalMap(env.MAX_PARALLEL_WRITES)(processProfile)
+    
   private def processAggregates(tags: Seq[UserTag]): Stream[F, Unit]
-    = mkAggregatesStream(tags).parEvalMap(env.MAX_PARALLEL_WRITES / 2)(processAggregate)
-
+    = mkAggregatesStream(tags).parEvalMap(env.MAX_PARALLEL_WRITES)(processAggregate)
+    
   def processTags: Stream[F, ExitCode] = for {
     tags <- tagsToAggregate.subscribe
     
-    _ <- processProfiles(tags).concurrently(processAggregates(tags))
+    _ <- processProfiles(tags) ++ processAggregates(tags)
 
   } yield ExitCode.Success
 }

@@ -60,66 +60,64 @@ class FrontendOpsSpec extends AnyFreeSpec {
     "returns the stored profile" in {
     
       val tag = General.userTag
-      val profile = SimpleProfile(Vector(tag))
+      val profile = Profile.fromTag(tag)
       storage.profiles.put(tag.cookie, TrackGen.default(profile))
 
       val timeRange = TestUtils.getTimeRangeContaining(tag.time)
       val limit     = 20
       
-      val expected  = profile.prettify(tag.cookie)
+      val expected  = profile
       val actual    = frontend.getProfile(tag.cookie, timeRange, limit).unsafeRunSync()
       
       assert(expected == actual)
     }
 
-    "takes time range into account" in {
-      
+    {
       val plus0 = General.bucket
       val plus1 = General.bucket.addMinutes(1)
       val plus2 = General.bucket.addMinutes(2)
       val plus3 = General.bucket.addMinutes(3)
-      
+
       val cookie = General.userTag.cookie
-      val included = General.userTag.copy(time = plus1.toTimestamp)
-      val excluded = General.userTag.copy(time = plus3.toTimestamp)
+      val action = General.userTag.action
 
-      val timeRange = TimeRange(plus0.toDateTime, plus2.toDateTime)
+      "takes time range into account" in {
+        
+        val included = General.userTag.copy(time = plus1.toTimestamp)
+        val excluded = General.userTag.copy(time = plus3.toTimestamp)
 
-      val profile = SimpleProfile(Vector(included, excluded))
-      storage.profiles.put(cookie, TrackGen.default(profile))
+        val timeRange = TimeRange(plus0.toDateTime, plus2.toDateTime)
 
-      val limit = 20
-      
-      val returned = frontend.getProfile(cookie, timeRange, limit).unsafeRunSync()
-      
-      val simple = returned.simplify
-      
-      assert(simple.tags.contains(included))
-      assert(!simple.tags.contains(excluded))
+        val profile = Profile.default(cookie).addOne(included).addOne(excluded)
+        storage.profiles.put(cookie, TrackGen.default(profile))
+
+        val limit = 20
+        
+        val returned = frontend.getProfile(cookie, timeRange, limit).unsafeRunSync()
+        
+        
+        assert(TestUtils.getTags(action, returned).contains(included))
+        assert(!TestUtils.getTags(action, returned).contains(excluded))
+      }
+
+      "takes limit into account" in {
+        
+        val included = General.userTag.copy(time = plus2.toTimestamp)
+        val excluded = General.userTag.copy(time = plus1.toTimestamp)
+
+        val timeRange = TimeRange(plus0.toDateTime, plus3.toDateTime)
+
+        val profile = Profile.default(cookie).addOne(included).addOne(excluded)
+        storage.profiles.put(cookie, TrackGen.default(profile))
+
+        val returned = frontend.getProfile(cookie, timeRange, 1).unsafeRunSync()
+        
+        assert(TestUtils.getTags(action, returned).contains(included))
+        assert(!TestUtils.getTags(action, returned).contains(excluded))
+      }  
     }
 
-    "takes limit into account" in {
-      val plus0 = General.bucket
-      val plus1 = General.bucket.addMinutes(1)
-      val plus2 = General.bucket.addMinutes(2)
-      val plus3 = General.bucket.addMinutes(3)
-      
-      val cookie = General.userTag.cookie
-      val included = General.userTag.copy(time = plus2.toTimestamp)
-      val excluded = General.userTag.copy(time = plus1.toTimestamp)
-
-      val timeRange = TimeRange(plus0.toDateTime, plus3.toDateTime)
-
-      val profile = SimpleProfile(Vector(included, excluded))
-      storage.profiles.put(cookie, TrackGen.default(profile))
-
-      val returned = frontend.getProfile(cookie, timeRange, 1).unsafeRunSync()
-      
-      val simple = returned.simplify
-      
-      assert(simple.tags.contains(included))
-      assert(!simple.tags.contains(excluded))
-    }
+    
   }
 
   "`FrontendOps.getAggregates`" - {
@@ -130,9 +128,10 @@ class FrontendOpsSpec extends AnyFreeSpec {
 
     val fields  = General.aggregateFields
     val key     = AggregateKey.fromFields(General.bucket, fields)
-    val value   = General.aggregateValue
+    val vb      = General.aggregateVB
+    val value   = vb.getValue(fields.action)
 
-    storage.aggregates.put(key, TrackGen.default(value))
+    storage.aggregates.put(key, TrackGen.default(vb))
 
     val from      = key.bucket.addMinutes(-1)
     val to        = key.bucket.addMinutes(2)

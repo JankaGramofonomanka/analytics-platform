@@ -13,7 +13,7 @@ import io.github.JankaGramofonomanka.analyticsplatform.tagprocessor.Config.Envir
 object Server {
 
   def stream[F[_]: Async](
-    profiles:         KeyValueDB[F, Cookie, SimpleProfile],
+    profiles:         KeyValueDB[F, Cookie, Profile],
     aggregates:       KeyValueDB[F, AggregateKey, AggregateVB],
     tagsToAggregate:  Topic.Subscriber[F, UserTag],
   )(implicit env: Environment): Stream[F, Nothing] = {

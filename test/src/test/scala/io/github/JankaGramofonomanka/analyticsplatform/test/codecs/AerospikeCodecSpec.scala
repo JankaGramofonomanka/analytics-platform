@@ -16,7 +16,7 @@ class AerospikeCodecSpec extends AnyFreeSpec {
   "\"decode . encode is id\"" - {
     "`Profile`" in {
         
-        val profile = ExampleData.General.simpleProfile
+        val profile = ExampleData.General.profile
         val bytes = codec.encodeProfile(profile)
         val decoded = codec.decodeProfile(bytes)
 
@@ -25,9 +25,9 @@ class AerospikeCodecSpec extends AnyFreeSpec {
     }
     "`AggregateValue`" in {
 
-        val value = ExampleData.General.aggregateValue
-        val bytes = codec.encodeAggregateValue(value)
-        val decoded = codec.decodeAggregateValue(bytes)
+        val value = ExampleData.General.aggregateVB
+        val bytes = codec.encodeAggregateVB(value)
+        val decoded = codec.decodeAggregateVB(bytes)
 
         assert(Some(value) == decoded)
         

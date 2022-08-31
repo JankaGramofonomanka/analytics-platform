@@ -15,7 +15,6 @@ object KafkaCodec {
 
     def deserialize(topic: String, data: Array[Byte]): UserTag = {
 
-      // TODO use compression etc.
       val asString = stringDeserializer.deserialize(topic, data)
 
       // TODO this is horrible, find a better way
