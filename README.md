@@ -1,6 +1,4 @@
-# analytics-platform
-
-## About
+# About
 A platform for an online retailer, like Amazon, Alibaba etc.
 The platform has 3 use cases:
 - It stores events (views and buys of products, with data about the product and the user)
@@ -11,8 +9,8 @@ The platform has 3 use cases:
 This is a final project at a university course, and the exact requirements for this project are availible here
 (this includes enpoints, and data formats): https://github.com/RTBHOUSE/mimuw-lab/tree/main/project
 
-## How it works
-The project is intended to be a distributed application and it has the followind components:
+# How it works
+The project is intended to be a distributed application and it has the following components:
 - frontend
 - tag-processor
 - a database
@@ -23,13 +21,27 @@ It receives requests, queries the **database** to compute and return the answer 
 
 **tag-processor** subscribes to the **kafka topic**, stores the events in the **database**, selects relevant aggregates to be updated and updates them.
 
-## Run the app
-### Note:
+::: mermaid
+graph TD
+    client        --> | events | frontend
+    frontend      --> | profiles, aggregates | client
+
+    database      --> | profiles, aggregates | frontend
+    frontend      --> | events | kafka
+    kafka         --> | events | tag-processor
+    tag-processor --> | profiles, aggregates | database
+    database      --> | profiles, aggregates | tag-processor
+:::
+
+# Run the app
+
+## Note:
   The app uses environment variables, all of which have a default value, 
   which assumes your entire app is running on localhost. 
   Therefore If you are running the app locally, there is no need to specify the variables.
   The variables are described [here](#environment)
-### locally with sbt
+
+## locally
 - run kafka:
   ```
   export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
@@ -56,184 +68,245 @@ It receives requests, queries the **database** to compute and return the answer 
   ```
   sbt "project tagProcessor" "~reStart"
   ```
-### with docker
+
+## REMOTELY
+To run the app remotely you will need 10 machines, For convinience let's give them names:
+- `DB-NODE-1`
+- `DB-NODE-2`
+- `KAFKA-HOST`
+- `CLUSTER-MASTER`
+- `CLUSTER-NODE-1`
+- `CLUSTER-NODE-2`
+- `CLUSTER-NODE-3`
+- `CLUSTER-NODE-4`
+- `CLUSTER-NODE-5`
+- `CLUSTER-NODE-6`
+  
+`DB-NODE-1` and `DB-NODE-2` will need 3.25GB free memory and 8GB free disk space
+
+
+
+### Build and push the images
 To build and use the docker images you will need to specify your docker username.
-ie. run this (both locally and on remote machines if relevant):
+ie. run this:
 ```
 export DOCKER_USERNAME=<your-docker-username>
 ```
 
-- build the images
-  - frontend:
-    ```
-    docker build . \
-        -t ${DOCKER_USERNAME}/analytics-platform-frontend \
-        -f frontend/src/main/docker/Dockerfile
-    ```
-
-  - tag-processor:
-    ```
-    docker build . \
-        -t ${DOCKER_USERNAME}/analytics-platform-tag-processor \
-        -f tag-processor/src/main/docker/Dockerfile
-    ```
-
-- run the app locally
+- frontend:
   ```
-  docker-compose up
+  docker build . \
+      -t ${DOCKER_USERNAME}/analytics-platform-frontend \
+      -f frontend/src/main/docker/Dockerfile
+  
+  docker push ${DOCKER_USERNAME}/analytics-platform-frontend
   ```
 
-- run the app remotely
+- tag-processor:
+  ```
+  docker build . \
+      -t ${DOCKER_USERNAME}/analytics-platform-tag-processor \
+      -f tag-processor/src/main/docker/Dockerfile
 
-  - To run the app remotely you will 2 machines, where you will host your database nodes, 
-    1 machine where you will run the kafka broker, and one or more machines to run frontend and tag-processor.
-    
-    You will adittionally need to specify the host of one of the database nodes and the address of the kafka broker.
-    
-    Add the following lines to `.env` (remember, you also need `DOCKER_USERNAME`)
-    ```
-    DOCKER_USERNAME=<your-docker-username>
-    AEROSPIKE_HOSTNAME=<host-of-the-database-node>
-    KAFKA_BOOTSTRAP_SERVERS=<address-of-kafka-broker>
-    ```
+  docker push ${DOCKER_USERNAME}/analytics-platform-tag-processor
+  ```
 
-    choose a `PATH` (can be different for all machines) on your remote machines and copy the `.env` file there
-    ```
-    scp .env <USER>@<KAFKA-HOST>:<PATH>/.env
-    scp .env <USER>@<FRONTEND-HOST>:<PATH>/.env
-    scp .env <USER>@<TAG-PROC-HOST>:<PATH>/.env
-    ```
+### Install and run aerospike
+Choose a `PATH` on `DB-NODE-1` and `DB-NODE-2` where you will store the necessary files.
+- on `DB-NODE-1` and `DB-NODE-2` install aerospike:
   
-  - push the images (run the commands in separate terminals to speed things up):
-    ```
-    docker push ${DOCKER_USERNAME}/analytics-platform-frontend
-    docker push ${DOCKER_USERNAME}/analytics-platform-tag-processor
-    ```
+  Download the Aerospike Community Version installation package (You need this exact version):
+
+  ```
+  cd <PATH>
+  wget -O aerospike.tgz https://download.aerospike.com/download/server/5.7.0.16/artifact/ubuntu20
+  ```
+
+  Install the server:
+
+  ```
+  tar xzvf aerospike.tgz
+  cd aerospike-server-community-5.7.0.16-ubuntu20.04/
+  sudo ./asinstall
+  ```
+
+  Create the logging directory:
+
+  ```
+  sudo mkdir /var/log/aerospike
+  ```
+
+- on your local computer, copy the aerospike.conf files to `DB-NODE-1` and `DB-NODE-2`
+  ```
+  scp database/src/main/resources/aerospike.conf <USER>@<DB-NODE-1>:<PATH>/aerospike.conf
+  scp database/src/main/resources/aerospike.conf <USER>@<DB-NODE-2>:<PATH>/aerospike.conf
+  ```
+
+- on `DB-NODE-1` and `DB-NODE-2` run aerospke:
+
+  Open aerospike.conf and replace `<IP_ADDRESS_OF_THE_CURRENT_SERVER>` and 
+  `<IP_ADDRESS_OF_THE_OTHER_SERVER>` with the ip's of respective machines
+  ```
+  cd <PATH>
+  nano aerospike.conf
+  ...
+  ```
+
+  Copy the Aerospike server configuration file:
+  ```
+  sudo cp aerospike.conf /etc/aerospike/
+  ```
+
+  Run the server on both nodes and verify the status:
+
+  ```
+  sudo systemctl start aerospike
+  sudo systemctl status aerospike
+  ```
+
+### Run kafka
+Choose a `PATH` on `KAFKA-HOST` where you will store the necessary files.
+- copy the `docker-compose.yml` file to `KAFKA-HOST`:
+  ```
+  scp kafka/src/main/docker/docker-compose.yml <USER>@<KAFKA-HOST>:<PATH>/docker-compose.yml
+  ```
+
+- on `KAFKA-HOST`:
+
+  run kafka
+  ```
+  cd <PATH>
+  echo KAFKA_BOOTSTRAP_SERVERS=<KAFKA-HOST>:9092 > .env
+  sudo docker-compose up -d
+  ```
+
+  create the topic
+  ```
+  docker exec -it broker bash
+  [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags --create --partitions 9 --config retention.ms=300000
+  ```
+
+### Set up a kubernetes cluster
+- on `CLUSTER-MASTER`, `CLUSTER-NODE-<1-6>` install `kubeadm`, `kubelet`, `kubectl`
+  ```
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https ca-certificates curl
+  sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  sudo apt-get update
+  sudo apt-get install -y kubelet kubeadm kubectl
+  sudo apt-mark hold kubelet kubeadm kubectl
+  ```
+
+- on `CLUSTER-MASTER` initialize the cluster
+  ```
+  sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+  ```
+
+  This should output instructions that look like this:
+  ```
+  Your Kubernetes control-plane has initialized successfully!
+
+  To start using your cluster, you need to run the following as a regular user:
+
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+  You should now deploy a Pod network to the cluster.
+  Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+    /docs/concepts/cluster-administration/addons/
+
+  You can now join any number of machines by running the following on each node
+  as root:
+
+    kubeadm join <control-plane-host>:<control-plane-port> --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+  ```
+
+  Follow these instructions, that is copy or save the command:
+  ```
+  kubeadm join <control-plane-host>:<control-plane-port> --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+  ```
+
+  Execute the following
+  ```
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  ```
+
+  Install a pod network:
+  ```
+  kubectl apply -f https://raw.githubusercontent.com/antrea-io/antrea/main/build/yamls/antrea.yml
+  ```
+
+- on `CLUSTER-NODE-<1-6>`:
   
-  - Copy the aerospike.conf files to your remote machines:
-    ```
-    scp database/src/main/resources/aerospike.conf <USER>@<DATABASE-NODE-1-HOST>:<PATH>/aerospike.conf
-    scp database/src/main/resources/aerospike.conf <USER>@<DATABASE-NODE-2-HOST>:<PATH>/aerospike.conf
-    ```
+  Join the cluster by executing the command you saved / copied after initializing the cluster
+  ```
+  kubeadm join <control-plane-host>:<control-plane-port> --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+  ```
 
-  - Copy the docker-compose files to your remote machines:
-    ```
-    scp kafka/src/main/docker/docker-compose.yml          <USER>@<KAFKA-HOST>:<PATH>/docker-compose.yml
-    scp frontend/src/main/docker/docker-compose.yml       <USER>@<FRONTEND-HOST>:<PATH>/docker-compose.yml
-    scp tag-processor/src/main/docker/docker-compose.yml  <USER>@<TAG-PROC-HOST>:<PATH>/docker-compose.yml
-    ```
-
-  - On your remote database machines:
-    
-    
-
-    - Install aerospike:
-
-      Download the Aerospike Community Version installation package:
-
-      ```
-      wget -O aerospike.tgz https://download.aerospike.com/download/server/5.7.0.16/artifact/ubuntu20
-      ```
-
-      Install the server:
-
-      ```
-      tar xzvf aerospike.tgz
-      cd aerospike-server-community-5.7.0.16-ubuntu20.04/
-      sudo ./asinstall
-      ```
-
-      Create the logging directory:
-
-      ```
-      sudo mkdir /var/log/aerospike
-      ```
-
-    - Run aerospke:
-    
-      Open aerospike.conf and replace `<IP_ADDRESS_OF_THE_CURRENT_SERVER>` and 
-      `<IP_ADDRESS_OF_THE_OTHER_SERVER>` with the ip's of respective machines
-      ```
-      cd <PATH>
-      nano aerospike.conf
-      <...>
-      ```
-
-      Copy the Aerospike server configuration file:
-      ```
-      sudo cp aerospike.conf /etc/aerospike/
-      ```
-
-      Run the server on both nodes and verify the status:
-
-      ```
-      sudo systemctl start aerospike
-      sudo systemctl status aerospike
-      ```
-
-
-  - On the remote kafka machines:
-    
-    run kafka:
-    ```
-    cd <PATH>
-    sudo docker-compose up
-    ```
-
-    create a topic:
-    ```
-    docker exec -it broker bash
-    [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags --create --partitions 10 --config retention.ms=300000
-    
-    ```
-
-  - On your remote frontend machine:
-
-    pull and run the image
-    ```
-    cd <PATH>
-    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-frontend:latest
-    sudo docker-compose up
-    ```
-
-  - On your remote tag-processor machine:
-
-    pull and run the image
-    ```
-    cd <PATH>
-    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-tag-processor:latest
-    sudo docker-compose up
-    ```
-
-- run the app remotely with multiple replicas
+### Deploy **frontend** and **tag-processor**
+Choose a `PATH` on `CLUSTER-MASTER` where you will store the kubernetes-templates.
+- on your local computer copy the kubernetes templates to `CLUSTER-MASTER`:
+  ```
+  scp frontend/src/main/kubernetes/frontend.yml           <USER>@<CLUSTER-MASTER>:<PATH>/
+  scp tag-processor/src/main/kubernetes/tag-processor.yml <USER>@<CLUSTER-MASTER>:<PATH>/
+  ```
   
-  - To replicate tag-processor, just run more of them
-    You might want to give each tag-processor a unique consumer id.
-    To do that modify the field `KAFKA_CONSUMER_ID` in `docker-compose.yaml`.
+- on `CLUSTER-MASTER`:
   
-  - To replicate frontend, you will need a loadbalancer.
-    To build a loadbalancer, you need to manually add server addresses at which your frontend replicas are availible to  `loadbalancer/src/main/resources/haproxy.cfg`, you can find instructions on how to do that there.
+  Replace `<DOCKER-USERNAME>`, `<DB-NODE-1>` and `<KAFKA-HOST>` with the appropriate values in both templates
+  ```
+  cd <PATH>
+  nano frontend.yml
+  ...
+  nano tag-processor.yml
+  ...
+  ```
 
-    Next, build and push a docker image of the loadbalancer:
-    ```
-    docker build . \
-      -t ${DOCKER_USERNAME}/analytics-platform-loadbalancer \
-      -f loadbalancer/src/main/docker/Dockerfile
-    
-    docker push ${DOCKER_USERNAME}/analytics-platform-loadbalancer
-    ```
+  Deploy **frontend**:
+  ```
+  kubectl apply -f frontend.yml
+  ```
 
-    Next on your remote loadbalancer machine pull the image and run it:
-    ```
-    docker pull <YOUR-DOCKER-USERNAME>/analytics-platform-loadbalancer:latest
-    docker run --network=host --privileged <YOUR-DOCKER-USERNAME>/analytics-platform-loadbalancer
+  Deploy **tag-processor**:
+  ```
+  kubectl apply -f tag-processor.yml
+  ```
 
-    ```
+  Execute the following:
+  ```
+  kubectl get services
+  ```
 
-    Now you can run frontends on the addresses you specified in `loadbalancer/src/main/resources/haproxy.cfg`,
-    and direct requests to `<LOADBALANCER-HOST>:8080`
+  It should give an output similar to this:
+  ```
+  NAME               TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+  frontend-service   LoadBalancer   10.104.35.11   <pending>     8080:31673/TCP   6d23h
+  kubernetes         ClusterIP      10.96.0.1      <none>        443/TCP          7d
+  ```
 
-### Environment
+  In the case abive, the port under which the service is availible is `31673`.
+  That is, it is the `SERVICE-PORT` value in the column:
+  ```
+  PORT(S)
+  8080:<SERVICE-PORT>/TCP
+  443/TCP
+  ```
+
+  You should now be able to use the app by sending requests to `<CLUSTER-MASTER>:<SERVICE-PORT>`
+  (in the case above, to `<CLUSTER-MASTER>:31673`).
+
+  
+
+
+  
+
+  
+
+## Environment
 
 The app uses the following environment variables:
 

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tag-processor-deployment
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tag-processor
+
+  minReadySeconds: 60
+
+  template:
+    metadata:
+      labels:
+        app: tag-processor
+    
+    spec:
+      containers:
+        - name: tag-processor
+          image: <DOCKER-USERNAME>/analytics-platform-tag-processor:latest
+          env:
+            - name: AEROSPIKE_HOSTNAME
+              value: "<DB-NODE-1>"
+            - name: AEROSPIKE_PORT
+              value: "3000"
+            - name: AEROSPIKE_PROFILES_NAMESPACE
+              value: profiles
+            - name: AEROSPIKE_AGGREGATES_NAMESPACE
+              value: aggregates
+            - name: AEROSPIKE_BUCKETS_PER_KEY
+              value: "60"
+            - name: AEROSPIKE_COMMIT_LEVEL
+              value: "MASTER"
+
+            - name: KAFKA_TOPIC
+              value: "tags"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "<KAFKA-HOST>:9092"
+            - name: KAFKA_GROUP
+              value: "tag-processors"
+            - name: MAX_PARALLEL_WRITES
+              value: "6"
+
+            - name: NUM_TAGS_TO_KEEP
+              value: "230"
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - tag-processor
+              topologyKey: "kubernetes.io/hostname"
+
