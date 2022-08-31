@@ -50,7 +50,7 @@ object Config {
     
     private object Defaults {
       val NUM_TAGS_TO_KEEP          = 200
-      val KAFKA_GROUP_ID            = "aggregate-processors"
+      val KAFKA_GROUP_ID            = "tag-processors"
       val KAFKA_CLIENT_ID           = "consumer"
       val KAFKA_POLL_TIMEOUT_MILLIS = 1000
       val KAFKA_MAX_POLL_RECORDS    = 500
