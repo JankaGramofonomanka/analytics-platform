@@ -32,7 +32,7 @@ spec:
             - name: AEROSPIKE_BUCKETS_PER_KEY
               value: "60"
             - name: AEROSPIKE_COMMIT_LEVEL
-              value: "MASTER"
+              value: "ALL"
 
             - name: KAFKA_TOPIC
               value: "tags"
