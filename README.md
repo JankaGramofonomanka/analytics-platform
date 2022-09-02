@@ -51,7 +51,7 @@ graph TD
   create a topic:
   ```
   docker exec -it broker bash
-  [appuser@broker ~]$ kafka-topics --bootstrap-server localhost:9092 --topic tags --create --partitions 10 --config retention.ms=300000
+  [appuser@broker ~]$ kafka-topics --bootstrap-server localhost:9092 --topic tags --create --partitions 10 --config retention.ms=900000
   ```
 
 - run database:
@@ -183,7 +183,7 @@ Choose a `PATH` on `KAFKA-HOST` where you will store the necessary files.
   create the topic
   ```
   docker exec -it broker bash
-  [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags --create --partitions 9 --config retention.ms=300000
+  [appuser@broker ~]$ kafka-topics --bootstrap-server ${KAFKA_BOOTSTRAP_SERVERS} --topic tags --create --partitions 9 --config retention.ms=900000
   ```
 
 ### Set up a kubernetes cluster
