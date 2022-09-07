@@ -1,0 +1,10 @@
+version: '3'
+services:
+  aerospike:
+    image: aerospike/aerospike-server:5.7.0.16 
+    container_name: aerospike
+    volumes:
+      - ../resources/:/etc/aerospike/
+    command: ["--config-file", "/etc/aerospike/aerospike-local.conf"]
+    ports:
+      - 3000-3002:3000-3002

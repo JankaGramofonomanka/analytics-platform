@@ -3,3 +3,5 @@
 /.bsp/
 target/
 .toignore/
+.idea/
+.env

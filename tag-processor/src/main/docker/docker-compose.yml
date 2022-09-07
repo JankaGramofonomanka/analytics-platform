@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  tag-processor:
+    image: ${DOCKER_USERNAME}/analytics-platform-tag-processor
+    container_name: tag-processor
+    network_mode: host
+    environment:
+
+      AEROSPIKE_HOSTNAME: ${AEROSPIKE_HOSTNAME}
+      AEROSPIKE_PORT: 3000
+      AEROSPIKE_PROFILES_NAMESPACE: profiles
+      AEROSPIKE_AGGREGATES_NAMESPACE: aggregates
+
+      KAFKA_TOPIC: tags
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_GROUP: tag-processors
+      KAFKA_CONSUMER_ID: consumer
+      KAFKA_POLL_TIMEOUT: 1000
+

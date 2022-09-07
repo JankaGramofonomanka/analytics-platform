@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+
+  minReadySeconds: 60
+
+  template:
+    metadata:
+      labels:
+        app: frontend
+    
+    spec:
+      containers:
+        - name: frontend
+          image: <DOCKER-USERNAME>/analytics-platform-frontend:latest
+          ports:
+            - name: http-port
+              containerPort: 8080
+          
+          env:
+            - name: AEROSPIKE_HOSTNAME
+              value: "<DB-NODE-1>"
+            - name: AEROSPIKE_PORT
+              value: "3000"
+            - name: AEROSPIKE_PROFILES_NAMESPACE
+              value: profiles
+            - name: AEROSPIKE_AGGREGATES_NAMESPACE
+              value: aggregates
+            - name: AEROSPIKE_BUCKETS_PER_KEY
+              value: "60"
+
+            - name: KAFKA_TOPIC
+              value: tags
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "<KAFKA-HOST>:9092"
+            
+            - name: FRONTEND_HOSTNAME
+              value: "0.0.0.0"
+            - name: FRONTEND_PORT
+              value: "8080"
+          
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 3
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - frontend
+              topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http-port
+      port: 8080
+      targetPort: http-port
+      protocol: TCP
+
+  selector:
+    app: frontend
+
