@@ -1,7 +1,6 @@
 package io.github.JankaGramofonomanka.analyticsplatform.common.aerospike
 
 import scala.util.Try
-import scala.util.{Success, Failure}
 
 import cats.effect.{IO, Async}
 
@@ -15,20 +14,9 @@ import io.github.JankaGramofonomanka.analyticsplatform.common.aerospike.Data._
 
 class AerospikeClientIO(client: AerospikeClient) extends Client[IO] {
 
-  private def printIfErr[A](msg: String, e: Try[A]): Try[A] = e match {
-    case Success(v) => {
-      println(s"$msg: success")
-      Success(v)
-    }
-    case Failure(e) => {
-      println(s"$msg: $e")
-      Failure(e)
-    }
-  }
-
   private def getRecord(key: Key): IO[TrackGenT[Option, Record]] = for {
     record <- Async[IO].async_[Record] { cb =>
-      cb(printIfErr("get", Try(client.get(client.readPolicyDefault, key))).toEither)
+      cb(Try(client.get(client.readPolicyDefault, key)).toEither)
     }
     optRecord = Utils.checkForNull(record)
     generation = optRecord.map(_.generation).getOrElse(Generation.default)
@@ -51,7 +39,7 @@ class AerospikeClientIO(client: AerospikeClient) extends Client[IO] {
       
       for {
         result <- Async[IO].async_[Boolean] { cb =>
-          cb(Right(printIfErr("put", Try(client.operate(policy, key, Operation.put(bin)))).isSuccess))
+          cb(Right(Try(client.operate(policy, key, Operation.put(bin))).isSuccess))
         }
       } yield result
     }
